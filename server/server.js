@@ -10,6 +10,8 @@ const Player = require('./player');
 // Store this in a database
 const players = [];
 
+
+
 app.use(morgan('dev'));
 app.use(express.json()); // Add this line to parse JSON bodies
 
@@ -35,6 +37,11 @@ const createGameValidationRules = [
 const joinGameValidationRules = [
     body('uuid').optional().isString(),
     body('name').isString(),
+    body('gameCode').isString().isLength({ min: 4, max: 4 }),
+];
+
+const startGameValidationRules = [
+    body('uuid').isString(),
     body('gameCode').isString().isLength({ min: 4, max: 4 }),
 ];
 
@@ -78,7 +85,7 @@ app.post('/api/join-game', joinGameValidationRules, handleValidationErrors, (req
         return res.status(404).json({ message: 'Game not found' });
     } else if (game.gameState !== Game.GameState.LOBBY) {
         return res.status(409).json({ message: 'Game already in progress' });
-    } else if (game.players.length >=4) {
+    } else if (game.players.length >= 4) {
         return res.status(403).json({ message: 'Game is full' });
     }
 
@@ -92,12 +99,25 @@ app.post('/api/join-game', joinGameValidationRules, handleValidationErrors, (req
     }
 });
 
-app.get('/api/game', function(req, res) {
+app.post('/api/start-game', startGameValidationRules, handleValidationErrors, (req, res) => {
+    const game = Game.findGame(req.body.gameCode);
+
+    if (!game) {
+        return res.status(404).json({ message: 'Game not found' });
+    }
+
+    if (game.startGame(req.body.uuid)) {
+        return res.status(200).json({ message: 'Game started' });
+    } else {
+        return res.status(403).json({ message: 'Cannot start game' });
+    }
+});
+
+
+app.get('/api/game', function (req, res) {
     const game = Game.findGame(req.query.gameCode);
     if (!game) {
         return res.status(404).json({ message: 'Game not found' });
     }
     res.status(200).json(game);
-  });
-  
-
+});
