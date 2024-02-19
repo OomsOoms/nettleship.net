@@ -94,5 +94,3 @@ for (const col in Card.Colour) {
 }
 
 module.exports = classicCards;
-
-

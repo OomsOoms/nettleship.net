@@ -1,19 +1,33 @@
 const Deck = require('./deck.js');
+const Player = require('./player');
+
 const classicCards = require('./cards.js');
 
-const games = [];
 
 class Game {
+    static games = [];
+    static users = [];
     static GameState = {
         LOBBY: 'LOBBY',
         IN_PROGRESS: 'IN_PROGRESS',
         FINISHED: 'FINISHED'
     };
     static findGame(gameCode) {
-        return games.find(game => game.gameCode === gameCode);
+        const game = Game.games.find(game => game.gameCode === gameCode);
+        if (game) {
+            return game;
+        } else {
+            throw new Error('game not found');
+        }
     }
     static addGame(game) {
-        games.push(game);
+        Game.games.push(game);
+    }
+    static removeGame(game) {
+        const index = Game.games.indexOf(game);
+        if (index !== -1) {
+            Game.games.splice(index, 1);
+        }
     }
     constructor() {
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -26,18 +40,33 @@ class Game {
         this.currentPlayerIndex = 0;
         this.settings = {
             gameMode: 'classic',
+            password: 'null'
         }
         this.players = [];
         this.deck = new Deck();
-
     }
-    addPlayer(player) {
-        if (games.some(game => game.gameCode === player.gameCode)) {
-            return false;
-        } else {
+    addPlayer(name, uuid, password) {
+        if (this.gameState === Game.GameState.LOBBY && this.players.length < 10) {
+            if (this.players.length !==0 && this.settings.password) {
+                if (password !== this.settings.password) {
+                    throw new Error('invalid password');
+                }
+            } 
+            if (Game.users.find(player => player.uuid === uuid)) {
+                throw new  Error('already in game');
+            }
+            let player = Game.users.find(player => player.uuid === uuid);
+            if (!player && uuid) {
+                throw new Error('invalid uuid');
+            } else if (!player) {
+                player = new Player(name);
+                Game.users.push(player);
+            }
             this.players.push(player);
             player.gameCode = this.gameCode;
-            return true;
+            return { gameCode: this.gameCode, playerUuid: player.uuid };
+        } else {
+            throw new Error('game is full');
         }
     }
     startGame(uuid) {
@@ -45,13 +74,15 @@ class Game {
             this.gameState = Game.GameState.IN_PROGRESS;
             this.currentPlayerIndex = Math.floor(Math.random() * this.players.length);
             switch (this.settings.gameMode) {
-            case 'classic':
-                this.deck.cards = classicCards;
-                break;
+                case 'classic':
+                    this.deck.cards = classicCards;
+                    break;
             }
             // deal hands
             // pick start card
-            return true;
+            return { message: 'game started' }
+        } else {
+            throw new Error('game cannot start');
         }
     }
 }

@@ -5,12 +5,6 @@ const app = express();
 const port = process.env.PORT || 8000;
 
 const Game = require('./game');
-const Player = require('./player');
-
-// Store this in a database
-const players = [];
-
-
 
 app.use(morgan('dev'));
 app.use(express.json()); // Add this line to parse JSON bodies
@@ -31,17 +25,17 @@ app.listen(port, () => {
 });
 
 const createGameValidationRules = [
-    body('uuid').optional().isString(),
+    body('uuid').optional().isUUID(),
     body('name').isString(),
 ];
 const joinGameValidationRules = [
-    body('uuid').optional().isString(),
+    body('uuid').optional().isUUID(),
     body('name').isString(),
     body('gameCode').isString().isLength({ min: 4, max: 4 }),
+    body('password').optional().isString()
 ];
-
 const startGameValidationRules = [
-    body('uuid').isString(),
+    body('uuid').isUUID(),
     body('gameCode').isString().isLength({ min: 4, max: 4 }),
 ];
 
@@ -54,65 +48,49 @@ const handleValidationErrors = (req, res, next) => {
     next();
 };
 
-const findPlayer = (name, uuid) => {
-    let player = players.find(player => player.uuid === uuid);
-    if (!player && uuid) {
-        return false;
-    } else if (!player) {
-        player = new Player(name);
-        players.push(player);
-    }
-    return player;
-}
-
 app.post('/api/create-game', createGameValidationRules, handleValidationErrors, (req, res) => {
     const game = new Game();
     Game.addGame(game);
-
-    const player = findPlayer(req.body.name, req.body.uuid);
-    if (!player) {
-        return res.status(400).json({ message: 'Invalid uuid' });
-    } else if (game.addPlayer(player)) {
-        return res.status(200).json({ gameCode: game.gameCode, playerUuid: player.uuid });
-    } else {
-        return res.status(409).json({ message: 'Cannot create game, already in a game' });
+    try {
+        const result = game.addPlayer(req.body.name, req.body.uuid, req.body.password);
+        return res.status(200).json( result );
+    } catch (error) {
+        Game.removeGame(game);
+        return res.status(400).json({ error: error.message });
     }
 });
 
 app.post('/api/join-game', joinGameValidationRules, handleValidationErrors, (req, res) => {
-    const game = Game.findGame(req.body.gameCode);
-    if (!game) {
-        return res.status(404).json({ message: 'Game not found' });
-    } else if (game.gameState !== Game.GameState.LOBBY) {
-        return res.status(409).json({ message: 'Game already in progress' });
-    } else if (game.players.length >= 4) {
-        return res.status(403).json({ message: 'Game is full' });
-    }
-
-    const player = findPlayer(req.body.name, req.body.uuid);
-    if (!player) {
-        return res.status(400).json({ message: 'Invalid uuid' });
-    } else if (game.addPlayer(player)) {
-        return res.status(200).json({ gameCode: game.gameCode, playerUuid: player.uuid });
-    } else {
-        return res.status(409).json({ message: 'Cannot join game, already in a game' });
+    try {
+        const game = Game.findGame(req.body.gameCode);
+        const result = game.addPlayer(req.body.name, req.body.uuid, req.body.password);
+        return res.status(200).json( result );
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
     }
 });
 
 app.post('/api/start-game', startGameValidationRules, handleValidationErrors, (req, res) => {
-    const game = Game.findGame(req.body.gameCode);
-
-    if (!game) {
-        return res.status(404).json({ message: 'Game not found' });
-    }
-
-    if (game.startGame(req.body.uuid)) {
-        return res.status(200).json({ message: 'Game started' });
-    } else {
-        return res.status(403).json({ message: 'Cannot start game' });
+    try {
+        const game = Game.findGame(req.body.gameCode);
+        const result = game.startGame(req.body.uuid);
+        return res.status(200).json( result );
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
     }
 });
 
+app.get('/api/public-games', function (req, res) {
+    const publicGames = Game.games.filter(game => !game.settings.password);
+    const reducedGamesInfo = publicGames.map(game => {
+        return {
+            gameMode: game.settings.gameMode,
+            numberOfPlayers: game.players.length,
+            gameCode: game.gameCode
+        };
+    });
+    res.status(200).json(reducedGamesInfo);
+});
 
 app.get('/api/game', function (req, res) {
     const game = Game.findGame(req.query.gameCode);
