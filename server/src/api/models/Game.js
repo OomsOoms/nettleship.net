@@ -1,7 +1,7 @@
-const Deck = require('./deck.js');
-const Player = require('./player');
+const Deck = require('./Deck.js');
+const Player = require('./Player.js');
 
-const classicCards = require('./cards.js');
+const classicCards = require('./Cards.js');
 
 
 class Game {
@@ -40,7 +40,7 @@ class Game {
         this.currentPlayerIndex = 0;
         this.settings = {
             gameMode: 'classic',
-            password: 'null'
+            password: null
         }
         this.players = [];
         this.deck = new Deck();
