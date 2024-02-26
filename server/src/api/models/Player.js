@@ -1,11 +1,21 @@
-const { v4: uuidv4 } = require('uuid');
+const mongoose = require('mongoose');
 
-class Player {
-    constructor(name) {
-        this.uuid = uuidv4();
-        this.name = name;
-        this.gameCode = null;
-    }
-}
+const UsersSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+    },
+    uuid: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    currentGame: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Games',
+    }],
+}, { collection: 'Users' });
 
-module.exports = Player;
+const UserModel = mongoose.model('User', UsersSchema);
+
+module.exports = UserModel;

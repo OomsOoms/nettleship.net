@@ -1,60 +1,28 @@
 const gameService = require('../services/gameService');
 
-const createGame = async (req, res) => {
-    try {
-        const { name, uuid, password } = req.body;
-        const result = await gameService.createGame({ name, uuid, password });
-        return res.status(200).json(result);
-    } catch (error) {
-        return res.status(400).json({ error: error.message });
-    }
-};
+class gameController {
 
-const joinGame = async (req, res) => {
-    try {
-        const gameCode = req.params.id;
-        const result = await gameService.joinGame(gameCode, req.body);
-        return res.status(200).json(result);
-    } catch (error) {
-        return res.status(400).json({ error: error.message });
-    }
-};
+    static createGame = async (req, res) => {
+        try {
+            const { name, uuid, password } = req.body;
+            const userDetails = await gameService.createGame({ name, uuid, password });
+            return res.status(200).json(userDetails);
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    };
 
-const startGame = (req, res) => {
-    try {
-        const game = Game.findGame(req.body.gameCode);
-        const result = game.startGame(req.body.uuid);
-        return res.status(200).json( result );
-    } catch (error) {
-        return res.status(400).json({ error: error.message });
-    }
-};
+    static findPublicGames = async (req, res) => {
+        try {
+            const publicGames = await gameService.findPublicGames();
+            res.status(200).json(publicGames);
+        } catch (error) {
+            // Handle any errors that occur during the execution of the asynchronous function
+            console.error('Error fetching public games:', error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    };
 
-const findPublicGames = (req, res) => {
-    const publicGames = Game.games.filter(game => !game.settings.password);
-    const reducedGamesInfo = publicGames.map(game => {
-        return {
-            gameMode: game.settings.gameMode,
-            numberOfPlayers: game.players.length,
-            gameCode: game.gameCode
-        };
-    });
-    res.status(200).json(reducedGamesInfo);
-};
-
-const getGame = (req, res) => {
-    try {
-        const game = Game.findGame(req.query.gameCode);
-        res.status(200).json(game);
-    } catch (error) {
-        return res.status(400).json({ error: error.message });
-    }
 }
 
-module.exports = {
-    createGame,
-    joinGame,
-    startGame,
-    findPublicGames,
-    getGame
-};
+module.exports = gameController;
