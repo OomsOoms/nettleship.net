@@ -3,8 +3,8 @@ const gameService = require('../services/gameService');
 class gameController {
 
     static createGame = async (req, res) => {
+        const { name, uuid, password } = req.body;
         try {
-            const { name, uuid, password } = req.body;
             const userDetails = await gameService.createGame({ name, uuid, password });
             return res.status(200).json(userDetails);
         } catch (error) {
@@ -13,8 +13,8 @@ class gameController {
     };
 
     static findPublicGames = async (req, res) => {
+        const publicGames = await gameService.findPublicGames();
         try {
-            const publicGames = await gameService.findPublicGames();
             res.status(200).json(publicGames);
         } catch (error) {
             // Handle any errors that occur during the execution of the asynchronous function

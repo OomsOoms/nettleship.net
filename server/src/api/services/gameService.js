@@ -1,7 +1,5 @@
-const { v4: uuidv4 } = require('uuid');
-
 const GameModel = require('../models/game');
-const PlayerModel = require('../models/player');
+const PlayerModel = require('../models/user');
 
 class GameService {
 
