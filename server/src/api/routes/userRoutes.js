@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middlewares/auth');
+const verifyJwt = require("../middlewares/verifyJwt");
 const validations = require('../validations/userValidations');
 const handleValidationErrors = require('../middlewares/handleValidationErrors');
 
-// Import your game controller
 const userController = require('../controllers/userController');
 
 router.route('/')
@@ -15,8 +14,8 @@ router.route('/login')
     .post(validations.loginUserValidations, handleValidationErrors, userController.loginUser);
 
 router.route('/me')
-    .get(auth, validations.getUserByIdValidations, handleValidationErrors, userController.getUserById)
-    .put(auth, validations.updateUserValidations, handleValidationErrors, userController.updateUser)
-    .delete(auth, validations.updateUserValidations, handleValidationErrors, userController.deleteUser);
+    .get(verifyJwt, validations.getUserByIdValidations, handleValidationErrors, userController.getUserById)
+    .put(verifyJwt, validations.updateUserValidations, handleValidationErrors, userController.updateUser)
+    .delete(verifyJwt, validations.updateUserValidations, handleValidationErrors, userController.deleteUser);
 
 module.exports = router;

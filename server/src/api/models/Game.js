@@ -1,46 +1,55 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const GameSchema = new mongoose.Schema({
+const GameSchema = new mongoose.Schema(
+  {
     gameCode: {
-        type: String,
-        required: true,
-        unique: true,
+      type: String,
+      required: true,
+      unique: true,
     },
     gameState: {
-        type: String,
-        enum: ['LOBBY', 'IN_PROGRESS', 'COMPLETED'],
-        default: 'LOBBY',
+      type: String,
+      enum: ["LOBBY", "IN_PROGRESS", "COMPLETED"],
+      default: "LOBBY",
     },
     currentPlayerIndex: {
-        type: Number,
-        default:  0,
+      type: Number,
+      default: 0,
     },
     settings: {
-        gameMode: {
-            type: String,
-            default: 'classic',
-        },
-        password: {
-            type: String,
-            default: null,
-        },
+      gameMode: {
+        type: String,
+        default: "classic",
+      },
+      password: {
+        type: String,
+        default: null,
+      },
     },
-    users: [{
+    users: [
+      {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Users',
-    }],
+        ref: "Users",
+      },
+    ],
     deck: {
-        cards: [{
-            type: mongoose.Schema.Types.Mixed,
-            default: [],
-        }],
-        discards: [{
-            type: mongoose.Schema.Types.Mixed,
-            default: [],
-        }],
-    },  
-}, { collection: 'Games' });
+      cards: [
+        {
+          type: mongoose.Schema.Types.Mixed,
+          default: [],
+        },
+      ],
+      discards: [
+        {
+          type: mongoose.Schema.Types.Mixed,
+          default: [],
+        },
+      ],
+    },
+  },
+  { collection: "Games" }
+);
 
-const GameModel = mongoose.model('Game', GameSchema);
+const GameModel = mongoose.model("Game", GameSchema);
 
 module.exports = GameModel;

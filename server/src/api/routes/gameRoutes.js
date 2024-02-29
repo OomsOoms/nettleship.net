@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-// Import your game controller
 const gameController = require('../controllers/gameController');
 
 router.route('/')
