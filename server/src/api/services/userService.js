@@ -1,79 +1,96 @@
 const User = require("../models/user");
 const generateToken = require("../helpers/generateJwt");
 const passwordHasher = require("../helpers/passwordHasher");
+const Error = require("../helpers/errors");
 
 async function registerUser(username, email, password) {
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    throw new Error("Email already registered");
+  const user = new User({ username, email, password });
+  try {
+    await user.save();
+  } catch (error) {
+    if (error.code === 11000) {
+      throw Error.mongoConflictError("Email already exists");
+    }
+    throw error;
   }
 
-  const user = new User({ username, email, password });
-  await user.save();
-
   const token = generateToken({ id: user._id });
-  return { user, token };
+  return { user: user, token: token };
 }
 
 async function getUserById(id) {
   const user = await User.findById(id);
   if (!user) {
-    throw new Error("User not found");
+    throw Error.userNotFound(`User with id ${id} not found`);
   }
   return user;
 }
 
 async function updateUser(id, password, newUsername, newEmail, newPassword) {
-  const user = await User.findById(id);
-  const isPasswordValid =
-    user && (await passwordHasher.comparePasswords(password, user.password));
-  if (!isPasswordValid || !user) {
-    throw new Error("Invalid credentials");
-  }
+  try {
+    const user = await User.findById(id);
 
-  if (
-    // I dont think this works
-    (newPassword && newPassword !== user.email) ||
-    (newUsername && newUsername !== user.email) ||
-    (newEmail && newEmail !== user.email)
-  ) {
-    console.log("updating");
-    user.username = newUsername || user.username;
-    user.email = newEmail || user.email;
-    user.password = newPassword || user.password;
-    try {
-      await user.save();
-    } catch (error) {
-      throw new Error("Error saving changes");
+    if (
+      !user ||
+      !(await passwordHasher.comparePasswords(password, user.password))
+    ) {
+      throw Error.invalidCredentials();
     }
 
-    const token = generateToken({ id: user._id });
-    return { user, token };
-  } else {
-    throw new Error("Details not not changed");
+    // Prepare the new data for the user
+    const newData = {
+      username: newUsername || user.username,
+      email: newEmail || user.email,
+      password: newPassword || user.password,
+    };
+
+    // Check if any of the specified fields have changed and throw an error if not
+    const fieldsToCheck = ["username", "email", "password"];
+    const hasChanged = fieldsToCheck.some((field) => {
+      return newData[field] !== undefined && newData[field] !== user[field];
+    });
+
+    if (!hasChanged) {
+      throw Error.invalidRequest("No changes detected");
+    }
+
+    // Update the user with the new data
+    Object.assign(user, newData);
+    const updatedUser = await user.save();
+
+    const token = generateToken({ id: updatedUser._id });
+    return { user: updatedUser, token: token };
+  } catch (error) {
+    // If there's a conflict with the new email, throw a specific error
+    if (error.code === 11000) {
+      throw Error.mongoConflictError("Email already exists");
+    }
+    throw error;
   }
 }
 
 async function deleteUser(id, password) {
   const user = await User.findById(id);
-  const isPasswordValid =
-    user && (await passwordHasher.comparePasswords(password, user.password));
-  if (!isPasswordValid || !user) {
-    throw new Error("Invalid credentials");
+  if (
+    !user ||
+    !(await passwordHasher.comparePasswords(password, user.password))
+  ) {
+    throw Error.invalidCredentials();
   }
   await User.deleteOne({ _id: id });
 }
 
 async function loginUser(email, password) {
   const user = await User.findOne({ email });
-  const isPasswordValid =
-    user && (await passwordHasher.comparePasswords(password, user.password));
-  if (!isPasswordValid || !user) {
-    throw new Error("Invalid credentials");
+  if (
+    !user ||
+    !(await passwordHasher.comparePasswords(password, user.password))
+  ) {
+    throw Error.invalidCredentials();
   }
 
   const token = generateToken({ id: user._id });
-  return { user, token };
+  return { user: user, token: token };
 }
 
 module.exports = {

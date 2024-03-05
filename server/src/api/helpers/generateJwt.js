@@ -1,11 +1,11 @@
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
 const secretKey = process.env.SECRET_KEY;
 
 module.exports = function (payload, options = {}) {
   // Default options
   const defaultOptions = {
-    expiresIn: "1h",
-    algorithm: "HS256",
+    expiresIn: '7d',
+    algorithm: 'HS256',
   };
 
   // Merge default options with provided options

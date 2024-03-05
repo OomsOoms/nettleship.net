@@ -1,4 +1,4 @@
-const gameService = require("../services/gameService");
+const gameService = require('../services/gameService');
 
 async function createGame(req, res) {
   const { name, uuid, password } = req.body;
@@ -15,8 +15,8 @@ async function findPublicGames(req, res) {
   try {
     res.status(200).json(publicGames);
   } catch (error) {
-    console.error("Error fetching public games:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error('Error fetching public games:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 }
 

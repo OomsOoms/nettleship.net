@@ -1,23 +1,22 @@
-const bcrypt = require("bcrypt");
+const bcryptjs = require('bcryptjs');
 
 const saltRounds = process.env.SALT_ROUNDS || 10;
 
 async function hashPassword(password) {
   try {
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcryptjs.hash(password, saltRounds);
     return hashedPassword;
   } catch (error) {
-    console.error("Error hashing password:", error);
+    console.error('Error hashing password:', error);
     throw error;
   }
 }
 
 async function comparePasswords(plainPassword, hashedPassword) {
   try {
-    const match = await bcrypt.compare(plainPassword, hashedPassword);
+    const match = await bcryptjs.compare(plainPassword, hashedPassword);
     return match;
   } catch (error) {
-    console.error("Error comparing passwords:", error);
     throw error;
   }
 }

@@ -1,65 +1,72 @@
-const userService = require("../services/userService");
+const userService = require('../services/userService');
 
 async function registerUser(req, res) {
   const { username, email, password } = req.body;
-  try {
-    const { user, token } = await userService.registerUser(
-      username,
-      email,
-      password
-    );
-    res.json({ token });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  const { user, token } = await userService.registerUser(
+    username,
+    email,
+    password
+  );
+  res.status(201).json({
+    token: token,
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+    },
+  });
 }
 
 async function getUserById(req, res) {
   const { id } = req.user;
-  try {
-    const user = await userService.getUserById(id);
-    res.json({ user });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  const user = await userService.getUserById(id);
+  res.status(200).json({
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+    },
+  });
 }
 
 async function updateUser(req, res) {
   const { id } = req.user;
   const { password, newUsername, newEmail, newPassword } = req.body;
-  try {
-    const { user, token } = await userService.updateUser(
-      id,
-      password,
-      newUsername,
-      newEmail,
-      newPassword
-    );
-    res.json({ token });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  const { user, token } = await userService.updateUser(
+    id,
+    password,
+    newUsername,
+    newEmail,
+    newPassword
+  );
+  res.status(200).json({
+    token: token,
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+    },
+  });
 }
 
 async function deleteUser(req, res) {
   const { id } = req.user;
   const { password } = req.body;
-  try {
-    await userService.deleteUser(id, password);
-    res.json({ message: "User deleted" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  await userService.deleteUser(id, password);
+  res.status(204).end();
 }
 
 async function loginUser(req, res) {
   const { email, password } = req.body;
-  try {
-    const { user, token } = await userService.loginUser(email, password);
-    res.json({ token });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  const { user, token } = await userService.loginUser(email, password);
+  res.status(200).json({
+    token: token,
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+    },
+  });
 }
 
 module.exports = {

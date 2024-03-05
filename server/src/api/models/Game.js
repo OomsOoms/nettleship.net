@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const GameSchema = new mongoose.Schema(
   {
@@ -9,8 +9,8 @@ const GameSchema = new mongoose.Schema(
     },
     gameState: {
       type: String,
-      enum: ["LOBBY", "IN_PROGRESS", "COMPLETED"],
-      default: "LOBBY",
+      enum: ['LOBBY', 'IN_PROGRESS', 'COMPLETED'],
+      default: 'LOBBY',
     },
     currentPlayerIndex: {
       type: Number,
@@ -19,7 +19,7 @@ const GameSchema = new mongoose.Schema(
     settings: {
       gameMode: {
         type: String,
-        default: "classic",
+        default: 'classic',
       },
       password: {
         type: String,
@@ -29,7 +29,7 @@ const GameSchema = new mongoose.Schema(
     users: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Users",
+        ref: 'Users',
       },
     ],
     deck: {
@@ -47,9 +47,9 @@ const GameSchema = new mongoose.Schema(
       ],
     },
   },
-  { collection: "Games" }
+  { collection: 'Games' }
 );
 
-const GameModel = mongoose.model("Game", GameSchema);
+const GameModel = mongoose.model('Game', GameSchema);
 
 module.exports = GameModel;

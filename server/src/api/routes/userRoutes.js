@@ -1,10 +1,10 @@
-const express = require('express');
-const router = express.Router();
-const verifyJwt = require("../middlewares/verifyJwt");
+const router = require('express-promise-router')();
+const verifyJwt = require('../middlewares/verifyJwt');
 const validations = require('../validations/userValidations');
-const handleValidationErrors = require('../middlewares/handleValidationErrors');
+const { handleValidationErrors } = require('../middlewares/errorHandler');
 
 const userController = require('../controllers/userController');
+
 
 router.route('/')
     .post(validations.registerUserValidations, handleValidationErrors, userController.registerUser);
