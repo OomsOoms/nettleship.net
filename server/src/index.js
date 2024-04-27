@@ -27,7 +27,6 @@ app.use(express.json());
 
 // Routes
 app.use('/api/users', require('./api/routes/userRoutes'));
-app.use('/api/games', require('./api/routes/gameRoutes'));
 
 // Error handling middleware
 app.use(errorHandler);
