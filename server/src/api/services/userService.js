@@ -1,7 +1,7 @@
-const User = require("../models/user");
-const generateToken = require("../helpers/generateJwt");
-const passwordHasher = require("../helpers/passwordHasher");
-const Error = require("../helpers/errors");
+const User = require('../models/user');
+const generateToken = require('../helpers/generateJwt');
+const passwordHasher = require('../helpers/passwordHasher');
+const Error = require('../helpers/errors');
 
 async function registerUser(username, email, password) {
   const user = new User({ username, email, password });
@@ -9,7 +9,7 @@ async function registerUser(username, email, password) {
     await user.save();
   } catch (error) {
     if (error.code === 11000) {
-      throw Error.mongoConflictError("Email already exists");
+      throw Error.mongoConflictError('Email already exists');
     }
     throw error;
   }
@@ -45,13 +45,13 @@ async function updateUser(id, password, newUsername, newEmail, newPassword) {
     };
 
     // Check if any of the specified fields have changed and throw an error if not
-    const fieldsToCheck = ["username", "email", "password"];
+    const fieldsToCheck = ['username', 'email', 'password'];
     const hasChanged = fieldsToCheck.some((field) => {
       return newData[field] !== undefined && newData[field] !== user[field];
     });
 
     if (!hasChanged) {
-      throw Error.invalidRequest("No changes detected");
+      throw Error.invalidRequest('No changes detected');
     }
 
     // Update the user with the new data
@@ -63,7 +63,7 @@ async function updateUser(id, password, newUsername, newEmail, newPassword) {
   } catch (error) {
     // If there's a conflict with the new email, throw a specific error
     if (error.code === 11000) {
-      throw Error.mongoConflictError("Email already exists");
+      throw Error.mongoConflictError('Email already exists');
     }
     throw error;
   }

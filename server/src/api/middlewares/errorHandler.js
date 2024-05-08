@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const { logEvent } = require('./logger');
 
+// eslint-disable-next-line no-unused-vars
 const errorHandler = (error, req, res, next) => {
   const errorStatus = error.status || 500;
   const errorMessage = error.message || 'Internal server error';
