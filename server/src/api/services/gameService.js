@@ -9,7 +9,7 @@ class GameService {
 
         if (game && game.gameState === 'LOBBY' && game.users.length < 10) {
             if (user && user.currentGame === game._id) {
-                
+                // Do nothing, intentionally empty block
             } 
         };
 

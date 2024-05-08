@@ -1,1 +1,1 @@
-process.env.SECRET_KEY = "testSecretKey";
+process.env.SECRET_KEY = 'testSecretKey';
