@@ -4,8 +4,11 @@ const validations = require('../validations/userValidations');
 const { handleValidationErrors } = require('../middlewares/errorHandler');
 
 const userController = require('../controllers/userController');
-
-
+/**
+ * @swagger
+ * tags:
+ *  name: Users
+ */
 router.route('/')
     .post(validations.registerUserValidations, handleValidationErrors, userController.registerUser);
     //.get(userController.getAllUsers);
