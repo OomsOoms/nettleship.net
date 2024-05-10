@@ -1,25 +1,20 @@
-require('dotenv').config();
 const express = require('express');
-const swaggerUi = require('swagger-ui-express');
 const mongoose = require('mongoose');
 const corsMiddleware = require('./config/corsOptions.js');
-
-const swaggerSpec = require('./config/swagger');
 const connectDB = require('./config/db');
 const { logger } = require('./api/middlewares/logger');
-const { errorHandler } = require('./api/middlewares/errorHandler');
+const { errorHandler } = require('./api/middlewares/errorHandler.js');
+
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
 // Connect to MongoDB
-//connectDB();
+connectDB();
 
 // middleware for logging
 app.use(logger);
-
-// credential check before cores
-//app.use(credentials)
 
 // Enable CORS for all routes
 app.use(corsMiddleware);
@@ -28,8 +23,7 @@ app.use(corsMiddleware);
 app.use(express.json());
 
 // Routes
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.use('/api/users', require('./api/routes/userRoutes'));
+require('./api/routes')(app);
 
 // Error handling middleware
 app.use(errorHandler);
@@ -40,8 +34,8 @@ app.all('*', (req, res) => {
 });
 
 // Connect to server
-//mongoose.connection.once('open', () => {
+mongoose.connection.once('open', () => {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on http://localhost:${PORT}/`);
   });
-//});
+});

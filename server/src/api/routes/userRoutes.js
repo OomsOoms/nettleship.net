@@ -2,8 +2,8 @@ const router = require('express-promise-router')();
 const verifyJwt = require('../middlewares/verifyJwt');
 const validations = require('../validations/userValidations');
 const { handleValidationErrors } = require('../middlewares/errorHandler');
+const { userController } = require('../controllers');
 
-const userController = require('../controllers/userController');
 /**
  * @swagger
  * tags:

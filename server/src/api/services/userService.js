@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const { User } = require('../models');
 const generateToken = require('../helpers/generateJwt');
 const passwordHasher = require('../helpers/passwordHasher');
 const Error = require('../helpers/errors');
