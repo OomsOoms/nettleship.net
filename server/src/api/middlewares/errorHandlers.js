@@ -1,5 +1,5 @@
 const { validationResult } = require('express-validator');
-const { logEvent } = require('./logger');
+const logEvent = require('../../config/logEvent');
 
 // eslint-disable-next-line no-unused-vars
 const errorHandler = (error, req, res, next) => {
@@ -9,7 +9,7 @@ const errorHandler = (error, req, res, next) => {
   const url = req.originalUrl;
   const timestamp = new Date().toISOString();
   const userId = req.user ? req.user.id : 'Not authenticated';
- 
+
   // Construct a detailed error log message
   const detailedErrorMessage = `
      Error: ${errorMessage}
@@ -19,16 +19,15 @@ const errorHandler = (error, req, res, next) => {
      User ID: ${userId}
      Stack Trace: ${error.stack}
   `;
- 
+
   // Log the detailed error message
   logEvent(detailedErrorMessage, 'errorLog.log');
- 
+
   // Send a response to the client
   res.status(errorStatus).json({ error: errorMessage });
- };
- 
+};
 
-const handleValidationErrors = (req, res, next) => {
+const validateRequest  = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -38,5 +37,5 @@ const handleValidationErrors = (req, res, next) => {
 
 module.exports = {
   errorHandler,
-  handleValidationErrors,
+  validateRequest,
 };

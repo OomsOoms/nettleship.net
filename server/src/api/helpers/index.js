@@ -2,9 +2,9 @@ const Error = require('./errors');
 const generateJwt = require('./generateJwt');
 
 module.exports = {
-    ...require('./passwordHasher'),
-    generateJwt,
-    Error,
+  ...require('./passwordHasher'),
+  generateJwt,
+  Error,
 };
 
 /**

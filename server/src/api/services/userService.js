@@ -30,10 +30,7 @@ async function updateUser(id, password, newUsername, newEmail, newPassword) {
   try {
     const user = await User.findById(id);
 
-    if (
-      !user ||
-      !(await comparePasswords(password, user.password))
-    ) {
+    if (!user || !(await comparePasswords(password, user.password))) {
       throw Error.invalidCredentials();
     }
 
@@ -71,10 +68,7 @@ async function updateUser(id, password, newUsername, newEmail, newPassword) {
 
 async function deleteUser(id, password) {
   const user = await User.findById(id);
-  if (
-    !user ||
-    !(await comparePasswords(password, user.password))
-  ) {
+  if (!user || !(await comparePasswords(password, user.password))) {
     throw Error.invalidCredentials();
   }
   await User.deleteOne({ _id: id });
@@ -82,10 +76,7 @@ async function deleteUser(id, password) {
 
 async function loginUser(email, password) {
   const user = await User.findOne({ email });
-  if (
-    !user ||
-    !(await comparePasswords(password, user.password))
-  ) {
+  if (!user || !(await comparePasswords(password, user.password))) {
     throw Error.invalidCredentials();
   }
 

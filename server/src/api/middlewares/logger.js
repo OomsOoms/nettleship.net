@@ -1,7 +1,5 @@
-const path = require('path');
 const { Buffer } = require('buffer');
-const fs = require('fs');
-const fsPromises = require('fs').promises;
+const logEvent = require('../../config/logEvent');
 
 function getColorCode(statusCode) {
   if (statusCode >= 500) {
@@ -14,22 +12,6 @@ function getColorCode(statusCode) {
     return '\x1b[32m';
   } else {
     return '\x1b[0m';
-  }
-}
-
-async function logEvent(message, logFile = 'requestLog.log') {
-  try {
-    new Promise((resolve) => {
-      console.log(message);
-      resolve();
-    });
-    if (!fs.existsSync('logs')) {
-      await fsPromises.mkdir('logs');
-    }
-
-    await fsPromises.appendFile(path.join('logs', logFile), `${message}\n`);
-  } catch (err) {
-    console.error(err);
   }
 }
 
@@ -55,7 +37,4 @@ const logger = (req, res, next) => {
   next();
 };
 
-module.exports = {
-  logEvent,
-  logger,
-};
+module.exports = logger;

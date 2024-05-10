@@ -1,9 +1,10 @@
 const verifyJwt = require('./verifyJwt');
+const logger = require('./logger');
 
 module.exports = {
-    ...require('./errorHandler'),
-    ...require('./logger'),
-    verifyJwt,
+  ...require('./errorHandlers'),
+  logger,
+  verifyJwt,
 };
 
 /**
