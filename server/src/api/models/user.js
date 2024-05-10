@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const passwordHasher = require('../helpers/passwordHasher');
+const { hashPassword } = require('../helpers');
 
 const UserSchema = new mongoose.Schema(
   {
@@ -26,7 +26,7 @@ const UserSchema = new mongoose.Schema(
 
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
-  this.password = await passwordHasher.hashPassword(this.password);
+  this.password = await hashPassword(this.password);
   this.passwordChangedAt = Math.floor(Date.now() / 1000);
   next();
 });

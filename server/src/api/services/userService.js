@@ -1,7 +1,7 @@
 const { User } = require('../models');
-const generateToken = require('../helpers/generateJwt');
-const passwordHasher = require('../helpers/passwordHasher');
-const Error = require('../helpers/errors');
+const { generateJwt } = require('../helpers');
+const { comparePasswords } = require('../helpers');
+const { Error } = require('../helpers');
 
 async function registerUser(username, email, password) {
   const user = new User({ username, email, password });
@@ -14,7 +14,7 @@ async function registerUser(username, email, password) {
     throw error;
   }
 
-  const token = generateToken({ id: user._id });
+  const token = generateJwt({ id: user._id });
   return { user: user, token: token };
 }
 
@@ -32,7 +32,7 @@ async function updateUser(id, password, newUsername, newEmail, newPassword) {
 
     if (
       !user ||
-      !(await passwordHasher.comparePasswords(password, user.password))
+      !(await comparePasswords(password, user.password))
     ) {
       throw Error.invalidCredentials();
     }
@@ -58,7 +58,7 @@ async function updateUser(id, password, newUsername, newEmail, newPassword) {
     Object.assign(user, newData);
     const updatedUser = await user.save();
 
-    const token = generateToken({ id: updatedUser._id });
+    const token = generateJwt({ id: updatedUser._id });
     return { user: updatedUser, token: token };
   } catch (error) {
     // If there's a conflict with the new email, throw a specific error
@@ -73,7 +73,7 @@ async function deleteUser(id, password) {
   const user = await User.findById(id);
   if (
     !user ||
-    !(await passwordHasher.comparePasswords(password, user.password))
+    !(await comparePasswords(password, user.password))
   ) {
     throw Error.invalidCredentials();
   }
@@ -84,12 +84,12 @@ async function loginUser(email, password) {
   const user = await User.findOne({ email });
   if (
     !user ||
-    !(await passwordHasher.comparePasswords(password, user.password))
+    !(await comparePasswords(password, user.password))
   ) {
     throw Error.invalidCredentials();
   }
 
-  const token = generateToken({ id: user._id });
+  const token = generateJwt({ id: user._id });
   return { user: user, token: token };
 }
 

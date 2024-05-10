@@ -1,8 +1,8 @@
 const router = require('express-promise-router')();
-const verifyJwt = require('../middlewares/verifyJwt');
-const validations = require('../validations/userValidations');
-const { handleValidationErrors } = require('../middlewares/errorHandler');
 const { userController } = require('../controllers');
+const { userValidations } = require('../validations');
+const { verifyJwt } = require('../middlewares');
+const { handleValidationErrors } = require('../middlewares');
 
 /**
  * @swagger
@@ -10,15 +10,15 @@ const { userController } = require('../controllers');
  *  name: Users
  */
 router.route('/')
-    .post(validations.registerUserValidations, handleValidationErrors, userController.registerUser);
+    .post(userValidations.registerUserValidations, handleValidationErrors, userController.registerUser);
     //.get(userController.getAllUsers);
 
 router.route('/login')
-    .post(validations.loginUserValidations, handleValidationErrors, userController.loginUser);
+    .post(userValidations.loginUserValidations, handleValidationErrors, userController.loginUser);
 
 router.route('/me')
-    .get(verifyJwt, validations.getUserByIdValidations, handleValidationErrors, userController.getUserById)
-    .put(verifyJwt, validations.updateUserValidations, handleValidationErrors, userController.updateUser)
-    .delete(verifyJwt, validations.updateUserValidations, handleValidationErrors, userController.deleteUser);
+    .get(verifyJwt, userValidations.getUserByIdValidations, handleValidationErrors, userController.getUserById)
+    .put(verifyJwt, userValidations.updateUserValidations, handleValidationErrors, userController.updateUser)
+    .delete(verifyJwt, userValidations.updateUserValidations, handleValidationErrors, userController.deleteUser);
 
 module.exports = router;
