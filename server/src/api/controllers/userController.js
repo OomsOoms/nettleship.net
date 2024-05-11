@@ -1,5 +1,4 @@
 const { userService } = require('../services');
-const { validateRequest } = require('../middlewares');
 
 /**
  * @desc Register a new user
