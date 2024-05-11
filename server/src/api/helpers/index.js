@@ -1,4 +1,4 @@
-const Error = require('./errors');
+const Error = require('./error');
 const generateJwt = require('./generateJwt');
 
 module.exports = {

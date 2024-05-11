@@ -18,7 +18,7 @@ async function registerUser(username, email, password) {
   return { user: user, token: token };
 }
 
-async function getUserById(id) {
+async function getCurrentUser(id) {
   const user = await User.findById(id);
   if (!user) {
     throw Error.userNotFound(`User with id ${id} not found`);
@@ -86,7 +86,7 @@ async function loginUser(email, password) {
 
 module.exports = {
   registerUser,
-  getUserById,
+  getCurrentUser,
   updateUser,
   deleteUser,
   loginUser,

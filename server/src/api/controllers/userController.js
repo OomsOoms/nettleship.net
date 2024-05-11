@@ -1,5 +1,10 @@
 const { userService } = require('../services');
+const { validateRequest } = require('../middlewares');
 
+/**
+ * @desc Register a new user
+ * @method POST
+ */
 async function registerUser(req, res) {
   const { username, email, password } = req.body;
   const { user, token } = await userService.registerUser(
@@ -17,9 +22,13 @@ async function registerUser(req, res) {
   });
 }
 
-async function getUserById(req, res) {
+/**
+ * @desc Get current user (From id in token)
+ * @method GET
+ */
+async function getCurrentUser(req, res) {
   const { id } = req.user;
-  const user = await userService.getUserById(id);
+  const user = await userService.getCurrentUser(id);
   res.status(200).json({
     user: {
       id: user._id,
@@ -29,6 +38,10 @@ async function getUserById(req, res) {
   });
 }
 
+/**
+ * @desc Update user
+ * @method PUT
+ */
 async function updateUser(req, res) {
   const { id } = req.user;
   const { password, newUsername, newEmail, newPassword } = req.body;
@@ -49,6 +62,10 @@ async function updateUser(req, res) {
   });
 }
 
+/**
+ * @desc Delete user
+ * @method DELETE
+ */
 async function deleteUser(req, res) {
   const { id } = req.user;
   const { password } = req.body;
@@ -71,7 +88,7 @@ async function loginUser(req, res) {
 
 module.exports = {
   registerUser,
-  getUserById,
+  getUserById: getCurrentUser,
   updateUser,
   deleteUser,
   loginUser,

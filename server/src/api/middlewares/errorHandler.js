@@ -1,4 +1,3 @@
-const { validationResult } = require('express-validator');
 const logEvent = require('../../config/logEvent');
 
 // eslint-disable-next-line no-unused-vars
@@ -13,7 +12,7 @@ const errorHandler = (error, req, res, next) => {
   // Construct a detailed error log message
   const detailedErrorMessage = `
      Error: ${errorMessage}
-     Method: ${method}
+    Method: ${method}
      URL: ${url}
      Timestamp: ${timestamp}
      User ID: ${userId}
@@ -27,15 +26,4 @@ const errorHandler = (error, req, res, next) => {
   res.status(errorStatus).json({ error: errorMessage });
 };
 
-const validateRequest  = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  next();
-};
-
-module.exports = {
-  errorHandler,
-  validateRequest,
-};
+module.exports = errorHandler;
