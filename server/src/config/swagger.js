@@ -8,8 +8,19 @@ const options = {
       version: '1.0.0',
       description: 'API documentation for your Node.js application',
     },
+    servers: [
+      {
+        url: 'http://localhost:8000',
+        description: 'Local server',
+      },
+      {
+        url: 'https://nettleship.net',
+        description: 'Production server',
+      },
+    ],
   },
-  apis: ['src/api/routes/userRoutes.js'],
+  apis: ['src/api/routes/*.js'],
 };
+
 const swaggerSpec = swaggerJSDoc(options);
 module.exports = swaggerSpec;

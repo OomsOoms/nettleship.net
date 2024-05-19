@@ -76,17 +76,28 @@ const { verifyJwt, validateRequest } = require('../middlewares');
  *                       location:
  *                         type: string
  */
-router.route('/')
-.post(userValidator.registerUser, validateRequest, userController.registerUser);
+router
+  .route('/')
+  .post(
+    userValidator.registerUser,
+    validateRequest,
+    userController.registerUser
+  );
 //.get(userController.getAllUsers);
 
-router.route('/login')
-.post(userValidator.loginUser, validateRequest, userController.loginUser);
+router
+  .route('/login')
+  .post(userValidator.loginUser, validateRequest, userController.loginUser);
 
 router.use(verifyJwt);
-router.route('/me')
-    .get(userValidator.getCurrentUser, validateRequest, userController.getUserById)
-    .put(userValidator.updateUser, validateRequest, userController.updateUser)
-    .delete(userValidator.deleteUser, validateRequest, userController.deleteUser);
+router
+  .route('/me')
+  .get(
+    userValidator.getCurrentUser,
+    validateRequest,
+    userController.getUserById
+  )
+  .put(userValidator.updateUser, validateRequest, userController.updateUser)
+  .delete(userValidator.deleteUser, validateRequest, userController.deleteUser);
 
 module.exports = router;
