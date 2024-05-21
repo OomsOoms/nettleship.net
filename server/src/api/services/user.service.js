@@ -93,7 +93,7 @@ async function getAllUsers(id) {
   const user = await User.findById(id);
   console.log(user.roles);
   if (!user.roles.includes('admin')) {
-    throw Error.unauthorized();
+    throw Error.invalidCredentials();
   }
   const users = await User.find();
   return users;

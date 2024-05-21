@@ -3,7 +3,9 @@ const swaggerJSDoc = require('swagger-jsdoc');
 const yaml = require('js-yaml');
 const fs = require('fs');
 
-const path = yaml.load(fs.readFileSync(__dirname + '/user.yml', 'utf8'));
+const userDefinitions = yaml.load(
+  fs.readFileSync(__dirname + '/userDefinitions.yml', 'utf8')
+);
 
 const options = {
   definition: {
@@ -30,7 +32,7 @@ const options = {
         description: 'Production server',
       },
     ],
-    ...path,
+    ...userDefinitions,
   },
   apis: ['src/api/routes/*.js'],
 };

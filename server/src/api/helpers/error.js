@@ -4,10 +4,6 @@ class Error {
     this.message = message;
   }
 
-  static serverError(message = 'Internal server error') {
-    return new Error(500, message);
-  }
-
   static invalidCredentials(message = 'Invalid credentials') {
     return new Error(401, message);
   }
@@ -28,8 +24,8 @@ class Error {
     return new Error(409, message);
   }
 
-  static unauthorized(message = 'Unauthorized') {
-    return new Error(401, message);
+  static serverError(message = 'Internal server error') {
+    return new Error(500, message);
   }
 }
 

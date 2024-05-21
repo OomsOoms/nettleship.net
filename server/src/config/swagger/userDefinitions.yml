@@ -45,11 +45,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/users"
         401:
-          description: Unauthorized, you do not have the required role to access this resource
+          description: Invalid credentials, you do not have the required role to access this resource
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/unauthorized"
+                $ref: "#/components/schemas/invalidCredentials"
   /api/users/login:
     post:
       summary: Login to an existing account
@@ -76,11 +76,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/badRequest"
         401:
-          description: Unauthorized, the username or password is incorrect
+          description: Invalid credentials, the username or password is incorrect
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/unauthorized"
+                $ref: "#/components/schemas/invalidCredentials"
   /api/users/me:
     get:
       summary: Get user profile
@@ -97,11 +97,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/user"
         401:
-          description: Unauthorized, you are not logged in
+          description: Invalid credentials, you are not logged in
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/unauthorized"
+                $ref: "#/components/schemas/invalidCredentials"
     put:
       summary: Update user profile
       description: Requires bearer token to access, which is obtained after logging in or creating an account. Update the profile of the user that is currently logged in. You will be provided with a new token if the update is successful, but your old one is not made invalid unless the password was changed. I might change this later so it does not provide a new token unless needed but I think this is fine.
@@ -129,11 +129,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/badRequest"
         401:
-          description: Unauthorized, you are not logged in
+          description: Invalid credentials, you are not logged in
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/unauthorized"
+                $ref: "#/components/schemas/invalidCredentials"
     delete:
       summary: Delete user account
       description: Requires bearer token to access, which is obtained after logging in or creating an account. Delete the account of the user that is currently logged in.
@@ -151,11 +151,11 @@ paths:
         204:
           description: User account deleted successfully
         401:
-          description: Unauthorized, you are not logged in
+          description: Invalid credentials, you are not logged in
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/unauthorized"
+                $ref: "#/components/schemas/invalidCredentials"
 components:
   schemas:
     user:
@@ -233,7 +233,7 @@ components:
         error:
           type: string
 
-    unauthorized:
+    invalidCredentials:
       type: object
       properties:
         error:
