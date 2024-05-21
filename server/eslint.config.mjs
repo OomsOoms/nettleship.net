@@ -14,6 +14,12 @@ export default [
   {
     files: ['**/*.js'],
     rules: {
+      'prettier/prettier': [
+        'error',
+        {
+          endOfLine: 'auto',
+        },
+      ],
       'prefer-const': [
         'error',
         {

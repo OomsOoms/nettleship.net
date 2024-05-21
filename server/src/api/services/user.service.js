@@ -9,7 +9,12 @@ async function registerUser(username, email, password) {
     await user.save();
   } catch (error) {
     if (error.code === 11000) {
-      throw Error.mongoConflictError('Email already exists');
+      const userExists = await User.findOne({ email });
+      if (userExists.username === username) {
+        throw Error.mongoConflictError('Username already exists');
+      } else {
+        throw Error.mongoConflictError('Email already exists');
+      }
     }
     throw error;
   }
@@ -74,8 +79,8 @@ async function deleteUser(id, password) {
   await User.deleteOne({ _id: id });
 }
 
-async function loginUser(email, password) {
-  const user = await User.findOne({ email });
+async function loginUser(username, email, password) {
+  const user = await User.findOne({ $or: [{ username }, { email }] });
   if (!user || !(await comparePasswords(password, user.password))) {
     throw Error.invalidCredentials();
   }
@@ -84,7 +89,18 @@ async function loginUser(email, password) {
   return { user: user, token: token };
 }
 
+async function getAllUsers(id) {
+  const user = await User.findById(id);
+  console.log(user.roles);
+  if (!user.roles.includes('admin')) {
+    throw Error.unauthorized();
+  }
+  const users = await User.find();
+  return users;
+}
+
 module.exports = {
+  getAllUsers,
   registerUser,
   getCurrentUser,
   updateUser,

@@ -11,7 +11,7 @@ const errorHandler = (error, req, res, next) => {
   // Construct a detailed error log message
   const detailedErrorMessage = `
      Error: ${errorMessage}
-    Method: ${method}
+     Method: ${method}
      URL: ${url}
      Timestamp: ${timestamp}
      User ID: ${userId}

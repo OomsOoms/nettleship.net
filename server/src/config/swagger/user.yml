@@ -1,50 +1,8 @@
----
 paths:
-  "/api/users":
-    get:
-      summary: Get all users
-      description: Get all users
-      tags:
-        - users
-      parameters:
-        - in: header
-          name: Authorization
-          description: Bearer token
-          required: true
-          schema:
-          type: string
-          format: jwt
-      responses:
-        "200":
-          description: Users retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  users:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        username:
-                          type: string
-                        email:
-                          type: string
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
+  /api/users:
     post:
       summary: Register a new user
-      description: Register a new user
+      description: Register a new user account. It requires a username, password and a unique email.
       tags:
         - users
       requestBody:
@@ -52,72 +10,50 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                email:
-                  type: string
-                password:
-                  type: string
-              example:
-                username: john_doe
-                email: example@email.com
-                password: password
+              $ref: "#/components/requestBodies/VerifyUser"
       responses:
-        "201":
+        201:
           description: User registered successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                  user:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                      username:
-                        type: string
-                      email:
-                        type: string
-        "400":
-          description: Bad request
+                $ref: "#/components/schemas/UserAuthResponse"
+        400:
+          description: Bad request, there is missing or oncorrect data in the request body
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                        value:
-                          type: string
-                        msg:
-                          type: string
-                        path:
-                          type: string
-                        location:
-                          type: string
-        "409":
-          description: Email already exists
+                $ref: "#/components/schemas/badRequest"
+        409:
+          description: Conflict, the email or username is already in use
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-  "/api/login":
+                $ref: "#/components/schemas/conflict"
+    get:
+      summary: Get all registered accounts
+      description: Requires bearer token to access as well as a role of admin on your account. Get a list of all registered account usernames and emails.
+      tags:
+        - users
+      security:
+        - bearer: []
+      responses:
+        200:
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/users"
+        401:
+          description: Unauthorized, you do not have the required role to access this resource
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/unauthorized"
+  /api/users/login:
     post:
-      summary: Login
-      description: Login
+      summary: Login to an existing account
+      description: Login to an existing account. Requires a username or email and password, if both an email and username are provided, the email will be used.
       tags:
         - users
       requestBody:
@@ -125,9 +61,226 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email:
+              $ref: "#/components/requestBodies/VerifyUser"
+      responses:
+        200:
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserAuthResponse"
+        400:
+          description: Bad request, there is missing or oncorrect data in the request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/badRequest"
+        401:
+          description: Unauthorized, the username or password is incorrect
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/unauthorized"
+  /api/users/me:
+    get:
+      summary: Get user profile
+      description: Requires bearer token to access, which is obtained after logging in or creating an account. Get the profile of the user that is currently logged in.
+      tags:
+        - users
+      security:
+        - bearer: []
+      responses:
+        200:
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        401:
+          description: Unauthorized, you are not logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/unauthorized"
+    put:
+      summary: Update user profile
+      description: Requires bearer token to access, which is obtained after logging in or creating an account. Update the profile of the user that is currently logged in. You will be provided with a new token if the update is successful, but your old one is not made invalid unless the password was changed. I might change this later so it does not provide a new token unless needed but I think this is fine.
+      tags:
+        - users
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/requestBodies/UpdateUser"
+      responses:
+        200:
+          description: User profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        400:
+          description: Bad request, there is missing or oncorrect data in the request body or no changes were made
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/badRequest"
+        401:
+          description: Unauthorized, you are not logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/unauthorized"
+    delete:
+      summary: Delete user account
+      description: Requires bearer token to access, which is obtained after logging in or creating an account. Delete the account of the user that is currently logged in.
+      tags:
+        - users
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/requestBodies/VerifyPassword"
+      responses:
+        204:
+          description: User account deleted successfully
+        401:
+          description: Unauthorized, you are not logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/unauthorized"
+components:
+  schemas:
+    user:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            username:
+              type: string
+            email:
+              type: string
+    users:
+      type: array
+      items:
+        type: object
+        properties:
+          user:
+            type: object
+            properties:
+              _id:
+                type: string
+              username:
+                type: string
+              email:
+                type: string
+              password:
+                type: string
+              roles:
+                type: array
+                items:
                   type: string
-                password:
-                  type: string
+              passwordChangedAt:
+                type: number
+              # This is a field generated by mongodb that is not used, its just included since this endpoint returns raw database data
+              __v:
+                type: number
+
+    UserAuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            username:
+              type: string
+            email:
+              type: string
+
+    badRequest:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+              field:
+                type: string
+              path:
+                type: string
+              location:
+                type: string
+    conflict:
+      type: object
+      properties:
+        error:
+          type: string
+
+    unauthorized:
+      type: object
+      properties:
+        error:
+          type: string
+
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  requestBodies:
+    VerifyUser:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      example:
+        username: john_doe
+        email: example@email.com
+        password: password
+
+    VerifyPassword:
+      type: object
+      properties:
+        password:
+          type: string
+      example:
+        password: password
+
+    UpdateUser:
+      type: object
+      properties:
+        password:
+          type: string
+        newUsername:
+          type: string
+        newEmail:
+          type: string
+        newPassword:
+          type: string
+      example:
+        password: password
+        newUsername: john_doe
+        newEmail: newemail@email.com
+        newPassword: password

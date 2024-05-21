@@ -6,6 +6,7 @@ const UserSchema = new mongoose.Schema(
     username: {
       type: String,
       required: true,
+      unique: true,
     },
     email: {
       type: String,
@@ -19,6 +20,10 @@ const UserSchema = new mongoose.Schema(
     passwordChangedAt: {
       type: Number,
       default: () => Math.floor(Date.now() / 1000),
+    },
+    roles: {
+      type: [String],
+      default: ['user'],
     },
   },
   { collection: 'Users' }

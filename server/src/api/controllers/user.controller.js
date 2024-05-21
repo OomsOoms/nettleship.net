@@ -5,6 +5,7 @@ const { userService } = require('../services');
  * @method POST
  */
 async function registerUser(req, res) {
+  // get the username, email, and password from the request body
   const { username, email, password } = req.body;
   const { user, token } = await userService.registerUser(
     username,
@@ -26,6 +27,7 @@ async function registerUser(req, res) {
  * @method GET
  */
 async function getCurrentUser(req, res) {
+  // get the id from the verified token
   const { id } = req.user;
   const user = await userService.getCurrentUser(id);
   res.status(200).json({
@@ -42,7 +44,9 @@ async function getCurrentUser(req, res) {
  * @method PUT
  */
 async function updateUser(req, res) {
+  // get the id from the verified token
   const { id } = req.user;
+  // get the password, newUsername, newEmail, and newPassword from the request body
   const { password, newUsername, newEmail, newPassword } = req.body;
   const { user, token } = await userService.updateUser(
     id,
@@ -66,15 +70,26 @@ async function updateUser(req, res) {
  * @method DELETE
  */
 async function deleteUser(req, res) {
+  // get the id from the verified token
   const { id } = req.user;
+  // get the password from the request body
   const { password } = req.body;
   await userService.deleteUser(id, password);
   res.status(204).end();
 }
 
+/**
+ * @desc Login a user
+ * @method POST
+ */
 async function loginUser(req, res) {
-  const { email, password } = req.body;
-  const { user, token } = await userService.loginUser(email, password);
+  // get the email and password from the request body
+  const { username, email, password } = req.body;
+  const { user, token } = await userService.loginUser(
+    username,
+    email,
+    password
+  );
   res.status(200).json({
     token: token,
     user: {
@@ -85,9 +100,17 @@ async function loginUser(req, res) {
   });
 }
 
+async function getAllUsers(req, res) {
+  // Get the id from the verified token
+  const { id } = req.user;
+  const users = await userService.getAllUsers(id);
+  res.status(200).json(users);
+}
+
 module.exports = {
+  getAllUsers,
   registerUser,
-  getUserById: getCurrentUser,
+  getCurrentUser,
   updateUser,
   deleteUser,
   loginUser,

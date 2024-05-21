@@ -34,11 +34,15 @@ const registerUser = [
     .bail(),
 ];
 
+// I just need it so that if one of the two is provided, the other is not required but this seems to work well enough
 const loginUser = [
+  body('username')
+    .if((value, { req }) => !req.body.email) // If email is not provided, username is required
+    .trim()
+    .escape()
+    .bail(),
   body('email')
-    .notEmpty()
-    .withMessage('Email is required')
-    .bail()
+    .if((value, { req }) => !req.body.username) // If username is not provided, email is required
     .trim()
     .escape()
     .isEmail()
@@ -53,6 +57,12 @@ const loginUser = [
     .escape()
     .isString()
     .bail(),
+  body().custom((value, { req }) => {
+    if (req.body.username && req.body.email) {
+      throw new Error('Both username and email cannot be provided');
+    }
+    return true;
+  }),
 ];
 
 // Only require the user to be authenticated which is done in other middlewear in the router

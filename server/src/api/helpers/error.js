@@ -9,7 +9,7 @@ class Error {
   }
 
   static invalidCredentials(message = 'Invalid credentials') {
-    return new Error(403, message);
+    return new Error(401, message);
   }
 
   static emailAlreadyExists(message = 'Email already exists') {
@@ -26,6 +26,10 @@ class Error {
 
   static mongoConflictError(message = 'MongoDB conflict error') {
     return new Error(409, message);
+  }
+
+  static unauthorized(message = 'Unauthorized') {
+    return new Error(401, message);
   }
 }
 

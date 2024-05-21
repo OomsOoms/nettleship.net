@@ -5,12 +5,12 @@ const { verifyJwt, validateRequest } = require('../middlewares');
 
 router
   .route('/')
+  .get(verifyJwt, userController.getAllUsers)
   .post(
     userValidator.registerUser,
     validateRequest,
     userController.registerUser
   );
-//.get(userController.getAllUsers);
 
 router
   .route('/login')
@@ -22,7 +22,7 @@ router
   .get(
     userValidator.getCurrentUser,
     validateRequest,
-    userController.getUserById
+    userController.getCurrentUser
   )
   .put(userValidator.updateUser, validateRequest, userController.updateUser)
   .delete(userValidator.deleteUser, validateRequest, userController.deleteUser);
