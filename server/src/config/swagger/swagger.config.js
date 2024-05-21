@@ -1,4 +1,9 @@
 const swaggerJSDoc = require('swagger-jsdoc');
+const yaml = require('js-yaml');
+const fs = require('fs');
+
+// eslint-disable-next-line no-undef
+const path = yaml.load(fs.readFileSync(__dirname + '/user.yml', 'utf8'));
 
 const options = {
   definition: {
@@ -8,6 +13,12 @@ const options = {
       version: '1.0.0',
       description: 'API documentation for your Node.js application',
     },
+    tags: [
+      {
+        name: 'users',
+        description: 'Endpoints for user registration and authentication',
+      },
+    ],
     servers: [
       {
         url: 'http://localhost:8000',
@@ -18,6 +29,7 @@ const options = {
         description: 'Production server',
       },
     ],
+    ...path,
   },
   apis: ['src/api/routes/*.js'],
 };
