@@ -1,4 +1,7 @@
 const { userService } = require('../services');
+/**
+ * Errors are caught in the error handler middleware so only the success response is sent
+ */
 
 /**
  * @desc Register a new user
@@ -7,19 +10,19 @@ const { userService } = require('../services');
 async function registerUser(req, res) {
   // get the username, email, and password from the request body
   const { username, email, password } = req.body;
-  const { user, token } = await userService.registerUser(
-    username,
-    email,
-    password
-  );
-  res.status(201).json({
-    token: token,
-    user: {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-    },
-  });
+  await userService.registerUser(username, email, password);
+  res.status(201).json({ message: 'User created successfully' });
+}
+
+/**
+ * @desc Get all users
+ * @method GET
+ */
+async function getAllUsers(req, res) {
+  // Get the id from the verified token
+  const { id } = req.user;
+  const users = await userService.getAllUsers(id);
+  res.status(200).json(users);
 }
 
 /**
@@ -75,36 +78,7 @@ async function deleteUser(req, res) {
   // get the password from the request body
   const { password } = req.body;
   await userService.deleteUser(id, password);
-  res.status(204).end();
-}
-
-/**
- * @desc Login a user
- * @method POST
- */
-async function loginUser(req, res) {
-  // get the email and password from the request body
-  const { username, email, password } = req.body;
-  const { user, token } = await userService.loginUser(
-    username,
-    email,
-    password
-  );
-  res.status(200).json({
-    token: token,
-    user: {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-    },
-  });
-}
-
-async function getAllUsers(req, res) {
-  // Get the id from the verified token
-  const { id } = req.user;
-  const users = await userService.getAllUsers(id);
-  res.status(200).json(users);
+  res.status(204).json({ message: 'User deleted successfully' });
 }
 
 module.exports = {
@@ -113,5 +87,4 @@ module.exports = {
   getCurrentUser,
   updateUser,
   deleteUser,
-  loginUser,
 };

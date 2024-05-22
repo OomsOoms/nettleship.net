@@ -4,23 +4,30 @@ const { comparePasswords } = require('../helpers');
 const { Error } = require('../helpers');
 
 async function registerUser(username, email, password) {
-  const user = new User({ username, email, password });
   try {
-    await user.save();
+    await new User({ username, email, password }).save();
+    return true;
   } catch (error) {
     if (error.code === 11000) {
-      const userExists = await User.findOne({ email });
-      if (userExists.username === username) {
+      if (error.keyValue.username) {
         throw Error.mongoConflictError('Username already exists');
       } else {
         throw Error.mongoConflictError('Email already exists');
       }
     }
+    // Throw an error if its not a duplicate key error
     throw error;
   }
+}
 
-  const token = generateJwt({ id: user._id });
-  return { user: user, token: token };
+// Figure out what im doing with JWT because this isnt very stateless
+async function getAllUsers(id) {
+  const user = await User.findById(id);
+  if (!user.roles.includes('admin')) {
+    throw Error.invalidCredentials();
+  }
+  const users = await User.find();
+  return users;
 }
 
 async function getCurrentUser(id) {
@@ -31,6 +38,7 @@ async function getCurrentUser(id) {
   return user;
 }
 
+// probably change this to not require password
 async function updateUser(id, password, newUsername, newEmail, newPassword) {
   try {
     const user = await User.findById(id);
@@ -79,31 +87,10 @@ async function deleteUser(id, password) {
   await User.deleteOne({ _id: id });
 }
 
-async function loginUser(username, email, password) {
-  const user = await User.findOne({ $or: [{ username }, { email }] });
-  if (!user || !(await comparePasswords(password, user.password))) {
-    throw Error.invalidCredentials();
-  }
-
-  const token = generateJwt({ id: user._id });
-  return { user: user, token: token };
-}
-
-async function getAllUsers(id) {
-  const user = await User.findById(id);
-  console.log(user.roles);
-  if (!user.roles.includes('admin')) {
-    throw Error.invalidCredentials();
-  }
-  const users = await User.find();
-  return users;
-}
-
 module.exports = {
   getAllUsers,
   registerUser,
   getCurrentUser,
   updateUser,
   deleteUser,
-  loginUser,
 };

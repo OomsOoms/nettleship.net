@@ -12,10 +12,6 @@ router
     userController.registerUser
   );
 
-router
-  .route('/login')
-  .post(userValidator.loginUser, validateRequest, userController.loginUser);
-
 router.use(verifyJwt);
 router
   .route('/me')
