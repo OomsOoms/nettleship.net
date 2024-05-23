@@ -21,6 +21,10 @@ const UserSchema = new mongoose.Schema(
       type: Number,
       default: () => Math.floor(Date.now() / 1000),
     },
+    active: {
+      type: Boolean,
+      default: false,
+    },
     roles: {
       type: [String],
       default: ['user'],

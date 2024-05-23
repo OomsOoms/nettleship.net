@@ -5,7 +5,12 @@ const { Error } = require('../helpers');
 
 async function registerUser(username, email, password) {
   try {
-    await new User({ username, email, password }).save();
+    const user = new User({ username, email, password });
+    await user.save();
+    const token = generateJwt({ id: user._id });
+    const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
+    console.log(verificationLink); // would be emailed but ill leave that for now
+
     return true;
   } catch (error) {
     if (error.code === 11000) {
@@ -28,6 +33,13 @@ async function getAllUsers(id) {
   }
   const users = await User.find();
   return users;
+}
+
+async function verifyUser(id) {
+  const user = await User.findById(id);
+  user.active = true;
+  await user.save();
+  console.log('shfjsdjfdsjsjjhjsjdfsjdfhjdfshjdfshjdsfjsdfhskdfhsdkjfh');
 }
 
 async function getCurrentUser(id) {
@@ -88,8 +100,9 @@ async function deleteUser(id, password) {
 }
 
 module.exports = {
-  getAllUsers,
   registerUser,
+  getAllUsers,
+  verifyUser,
   getCurrentUser,
   updateUser,
   deleteUser,

@@ -25,6 +25,14 @@ async function getAllUsers(req, res) {
   res.status(200).json(users);
 }
 
+async function verifyUser(req, res) {
+  // Get the id from the verified token
+  const { id } = req.user;
+  console.log(id);
+  await userService.verifyUser(id);
+  res.status(200).json({ message: 'Email verified' });
+}
+
 /**
  * @desc Get current user (From id in token)
  * @method GET
@@ -82,8 +90,9 @@ async function deleteUser(req, res) {
 }
 
 module.exports = {
-  getAllUsers,
   registerUser,
+  getAllUsers,
+  verifyUser,
   getCurrentUser,
   updateUser,
   deleteUser,

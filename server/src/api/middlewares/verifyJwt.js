@@ -4,8 +4,16 @@ const { User } = require('../models');
 
 async function verifyJwt(req, res, next) {
   const authHeader = req.headers.authorization || req.headers.Authorization;
-  if (!authHeader?.startsWith('Bearer ')) return res.sendStatus(401);
-  const token = authHeader.split(' ')[1];
+  let token;
+  if (!authHeader?.startsWith('Bearer ')) {
+    if (!req.query.token) {
+      return res.sendStatus(401);
+    }
+    token = req.query.token;
+  } else {
+    token = authHeader.split(' ')[1];
+  }
+
   try {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
     const user = await User.findById(decoded.id);
@@ -13,6 +21,7 @@ async function verifyJwt(req, res, next) {
       return res.status(401).json({ error: 'Token has expired' });
     }
     req.user = decoded;
+    console.log(user);
     next();
   } catch {
     res.status(401).json({ error: 'Invalid token' });

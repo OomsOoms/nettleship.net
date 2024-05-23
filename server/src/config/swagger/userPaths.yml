@@ -49,6 +49,32 @@
           application/json:
             schema:
               $ref: "#/components/schemas/invalidCredentials"
+/api/users/verify:
+  post:
+    description: Verify a user account
+    summary: Verify a user account
+    tags:
+      - users
+    parameters:
+      - name: token
+        in: path
+        description: The JWT token that will verify the user, the full link is emailed to the user instead of just the JWT
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: User verified successfully
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/verified"
+      400:
+        description: Bad request, the token is invalid or expired
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/badRequest"
 /api/users/me:
   get:
     summary: Get user profile

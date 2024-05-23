@@ -22,5 +22,6 @@ router
   )
   .put(userValidator.updateUser, validateRequest, userController.updateUser)
   .delete(userValidator.deleteUser, validateRequest, userController.deleteUser);
+router.route('/verify').get(userController.verifyUser);
 
 module.exports = router;

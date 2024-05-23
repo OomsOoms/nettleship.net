@@ -9,6 +9,9 @@ async function loginUser(username, email, password) {
     throw Error.invalidCredentials();
   }
 
+  if (!user.active) {
+    throw Error.accountNotActive();
+  }
   const token = generateJwt({ id: user._id });
   return { user: user, token: token };
 }
