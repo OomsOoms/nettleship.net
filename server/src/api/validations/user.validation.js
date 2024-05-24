@@ -11,9 +11,9 @@ const registerUser = [
     .isLength({ min: 3 })
     .withMessage('Username must be at least 3 characters long')
     .bail()
-    .matches(/^[a-z0-9_-]+$/)
+    .matches(/^[a-z0-9_.-]+$/)
     .withMessage(
-      'Username can only contain lowercase letters, numbers, underscores, and hyphens'
+      'Username can only contain lowercase letters, numbers, underscores, hyphens, and full stops'
     )
     .bail(),
   body('email')
