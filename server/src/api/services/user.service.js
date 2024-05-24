@@ -2,17 +2,33 @@ const { User } = require('../models');
 const { generateJwt, comparePasswords, sendEmail } = require('../helpers');
 const { Error } = require('../helpers');
 
-// if a user hasnt verified their email within a certain time frame, they should be deleted
-// jwt token method im using might not be the best for this so i might need to change it
 async function registerUser(username, email, password) {
   try {
+    // Few details are needed to create a user, this is to reduce friction in the registration process
     const user = new User({ username, email, password });
     await user.save();
     const token = generateJwt({ id: user._id }, { expiresIn: '10m' });
     const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
     sendEmail(email, 'Verify your email', verificationLink);
-
-    return true;
+    return {
+      success: true,
+      message:
+        'User created, email verification link sent and will expire in 10 minutes',
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        active: user.active,
+        profile: {
+          bio: user.profile.bio,
+          profilePicture: user.profile.profilePicture,
+          displayName: user.profile.displayName,
+        },
+        settings: {
+          language: user.settings.language,
+        },
+      },
+    };
   } catch (error) {
     if (error.code === 11000) {
       if (error.keyValue.username) {
@@ -21,7 +37,6 @@ async function registerUser(username, email, password) {
         throw Error.mongoConflictError('Email already exists');
       }
     }
-    // Throw an error if its not a duplicate key error
     throw error;
   }
 }

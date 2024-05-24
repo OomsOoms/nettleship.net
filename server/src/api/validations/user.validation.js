@@ -10,6 +10,11 @@ const registerUser = [
     .bail()
     .isLength({ min: 3 })
     .withMessage('Username must be at least 3 characters long')
+    .bail()
+    .matches(/^[a-z0-9_-]+$/)
+    .withMessage(
+      'Username can only contain lowercase letters, numbers, underscores, and hyphens'
+    )
     .bail(),
   body('email')
     .notEmpty()
@@ -26,7 +31,7 @@ const registerUser = [
     .withMessage('Password is required')
     .bail()
     .isLength({ min: 8 })
-    .withMessage('Password must be at least  8 characters long')
+    .withMessage('Password must be at least 8 characters long')
     .bail()
     .trim()
     .escape()

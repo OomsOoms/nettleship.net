@@ -10,8 +10,8 @@ const { userService } = require('../services');
 async function registerUser(req, res) {
   // get the username, email, and password from the request body
   const { username, email, password } = req.body;
-  await userService.registerUser(username, email, password);
-  res.status(201).json({ message: 'User created successfully' });
+  const user = await userService.registerUser(username, email, password);
+  res.status(201).json(user);
 }
 
 /**
