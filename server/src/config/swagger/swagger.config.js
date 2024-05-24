@@ -29,6 +29,10 @@ const options = {
         url: 'https://nettleship.net',
         description: 'Production server',
       },
+      {
+        url: 'https://s84dlvcl-8000.uks1.devtunnels.ms/',
+        description: 'DevTunnel server',
+      },
     ],
     tags: {
       ...yaml.load(tags),

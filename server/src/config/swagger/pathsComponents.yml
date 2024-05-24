@@ -68,6 +68,19 @@ schemas:
               type: string
             location:
               type: string
+
+  verificationEmailSent:
+    type: object
+    properties:
+      message:
+        type: string
+
+  verified:
+    type: object
+    properties:
+      message:
+        type: string
+
   conflict:
     type: object
     properties:
@@ -125,3 +138,10 @@ requestBodies:
       newUsername: john_doe
       newEmail: newemail@email.com
       newPassword: password
+  ResendVerification:
+    type: object
+    properties:
+      email:
+        type: string
+    example:
+      email: example@email.com

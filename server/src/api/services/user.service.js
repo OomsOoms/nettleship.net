@@ -1,15 +1,16 @@
 const { User } = require('../models');
-const { generateJwt } = require('../helpers');
-const { comparePasswords } = require('../helpers');
+const { generateJwt, comparePasswords, sendEmail } = require('../helpers');
 const { Error } = require('../helpers');
 
+// if a user hasnt verified their email within a certain time frame, they should be deleted
+// jwt token method im using might not be the best for this so i might need to change it
 async function registerUser(username, email, password) {
   try {
     const user = new User({ username, email, password });
     await user.save();
-    const token = generateJwt({ id: user._id });
+    const token = generateJwt({ id: user._id }, { expiresIn: '10m' });
     const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
-    console.log(verificationLink); // would be emailed but ill leave that for now
+    sendEmail(email, 'Verify your email', verificationLink);
 
     return true;
   } catch (error) {
@@ -39,7 +40,16 @@ async function verifyUser(id) {
   const user = await User.findById(id);
   user.active = true;
   await user.save();
-  console.log('shfjsdjfdsjsjjhjsjdfsjdfhjdfshjdfshjdsfjsdfhskdfhsdkjfh');
+}
+
+async function requestVerification(email) {
+  const user = await User.findOne({ email });
+  if (!user || user.active) {
+    throw Error.userNotFound('User not found or already verified');
+  }
+  const token = generateJwt({ id: user._id });
+  const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
+  console.log(verificationLink); // would be emailed but ill leave that for now
 }
 
 async function getCurrentUser(id) {
@@ -103,6 +113,7 @@ module.exports = {
   registerUser,
   getAllUsers,
   verifyUser,
+  requestVerification,
   getCurrentUser,
   updateUser,
   deleteUser,

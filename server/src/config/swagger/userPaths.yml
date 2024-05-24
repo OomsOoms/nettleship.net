@@ -51,6 +51,30 @@
               $ref: "#/components/schemas/invalidCredentials"
 /api/users/verify:
   post:
+    summary: Resend verification email
+    description: Resend the verification email to the user. This is useful if the user did not receive the email or if the link expired.
+    tags:
+      - users
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/requestBodies/ResendVerification"
+    responses:
+      200:
+        description: Verification email sent successfully
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/verificationEmailSent"
+      400:
+        description: Bad request, the email is invalid or the account is already verified
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/badRequest"
+  get:
     description: Verify a user account
     summary: Verify a user account
     tags:

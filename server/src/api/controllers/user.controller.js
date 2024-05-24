@@ -26,11 +26,17 @@ async function getAllUsers(req, res) {
 }
 
 async function verifyUser(req, res) {
-  // Get the id from the verified token
+  // Get the id from the verified param token
   const { id } = req.user;
-  console.log(id);
   await userService.verifyUser(id);
   res.status(200).json({ message: 'Email verified' });
+}
+
+async function requestVerification(req, res) {
+  // Get the id from the verified token
+  const { email } = req.body;
+  await userService.requestVerification(email);
+  res.status(200).json({ message: 'Verification email sent' });
 }
 
 /**
@@ -93,6 +99,7 @@ module.exports = {
   registerUser,
   getAllUsers,
   verifyUser,
+  requestVerification,
   getCurrentUser,
   updateUser,
   deleteUser,

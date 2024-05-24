@@ -17,14 +17,19 @@ async function verifyJwt(req, res, next) {
   try {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
     const user = await User.findById(decoded.id);
+    // remove this as its not stateless and defeats the purpose of JWT
     if (!user || user.passwordChangedAt > decoded.iat) {
       return res.status(401).json({ error: 'Token has expired' });
     }
     req.user = decoded;
     console.log(user);
     next();
-  } catch {
-    res.status(401).json({ error: 'Invalid token' });
+  } catch (err) {
+    if (err instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ error: 'Token has expired' });
+    } else {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
   }
 }
 
