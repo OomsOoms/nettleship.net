@@ -1,6 +1,5 @@
 //const nodemailer = require('nodemailer');
 
-// im getting spammed so much so im just loggin the email
 module.exports = function (to, subject, text) {
   //const transporter = nodemailer.createTransport({
   //  service: 'Gmail',
@@ -13,7 +12,7 @@ module.exports = function (to, subject, text) {
   //  },
   //});
   const mailOptions = {
-    //from: "", // If not set, it will be sent from the default email of the gmail account
+    from: process.env.FROM_ADDRESS, // If not set, it will be sent from the default email of the gmail account
     to: to,
     subject: subject,
     text: text,
@@ -25,5 +24,6 @@ module.exports = function (to, subject, text) {
   //    console.log('Email sent: ', info.response);
   //  }
   //});
+  // Log them because we don't want to send emails in development
   console.log(mailOptions);
 };

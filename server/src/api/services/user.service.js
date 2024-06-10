@@ -13,7 +13,7 @@ async function registerUser(username, email, password) {
     return {
       success: true,
       message:
-        'User created, email verification link sent and will expire in 10 minutes',
+        'User created successfully, email verification link sent and will expire in 10 minutes',
       user: {
         _id: user._id,
         username: user.username,

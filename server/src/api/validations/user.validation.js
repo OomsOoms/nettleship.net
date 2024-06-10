@@ -11,6 +11,8 @@ const registerUser = [
     .isLength({ min: 3 })
     .withMessage('Username must be at least 3 characters long')
     .bail()
+    .isLength({ max: 20 })
+    .withMessage('Username must be at most 20 characters long')
     .matches(/^[a-z0-9_.-]+$/)
     .withMessage(
       'Username can only contain lowercase letters, numbers, underscores, hyphens, and full stops'
@@ -22,20 +24,29 @@ const registerUser = [
     .bail()
     .trim()
     .escape()
-    .isEmail()
+    .isLength({ min: 6 })
+    .withMessage('Email must be at least 6 characters long')
+    .bail()
+    .isLength({ max: 71 })
+    .withMessage('Email must be at most 71 characters long')
+    .bail()
+    .isEmail() // this also checks the length so the values I picked were based off of this, just so i can get better error messages
     .normalizeEmail()
     .withMessage('Invalid email format')
     .bail(),
   body('password')
+    .trim()
+    .escape()
+    .isString()
+    .bail()
     .notEmpty()
     .withMessage('Password is required')
     .bail()
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters long')
     .bail()
-    .trim()
-    .escape()
-    .isString()
+    .isLength({ max: 128 })
+    .withMessage('Password must be at most 128 characters long')
     .bail(),
 ];
 
