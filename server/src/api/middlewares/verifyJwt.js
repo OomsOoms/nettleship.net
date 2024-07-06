@@ -1,3 +1,4 @@
+// THis will be replaced witb server side sessions
 const jwt = require('jsonwebtoken');
 
 const { User } = require('../models');

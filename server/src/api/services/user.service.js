@@ -53,6 +53,9 @@ async function getAllUsers(id) {
 
 async function verifyUser(id) {
   const user = await User.findById(id);
+  if (!user || user.active) {
+    throw Error.userNotFound('User not found or already verified');
+  }
   user.active = true;
   await user.save();
 }
@@ -64,7 +67,7 @@ async function requestVerification(email) {
   }
   const token = generateJwt({ id: user._id });
   const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
-  console.log(verificationLink); // would be emailed but ill leave that for now
+  sendEmail(email, 'Verify your email', verificationLink);
 }
 
 async function getCurrentUser(id) {

@@ -1,4 +1,5 @@
 const { userService } = require('../services');
+const { decodeJwt } = require('../helpers');
 /**
  * Errors are caught in the error handler middleware so only the success response is sent
  */
@@ -27,13 +28,13 @@ async function getAllUsers(req, res) {
 
 async function verifyUser(req, res) {
   // Get the id from the verified param token
+  decodeJwt(req, res);
   const { id } = req.user;
   await userService.verifyUser(id);
   res.status(200).json({ message: 'Email verified' });
 }
 
 async function requestVerification(req, res) {
-  // Get the id from the verified token
   const { email } = req.body;
   await userService.requestVerification(email);
   res.status(200).json({ message: 'Verification email sent' });

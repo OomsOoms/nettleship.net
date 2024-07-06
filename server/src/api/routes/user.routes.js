@@ -15,7 +15,7 @@ router
 // Probably make its own jwt function since its a token param
 router
   .route('/verify')
-  .get(verifyJwt, userController.verifyUser)
+  .get(userController.verifyUser)
   .post(userController.requestVerification);
 
 router.use(verifyJwt);

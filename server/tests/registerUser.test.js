@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../src/index'); // Assuming your app is defined in a separate file
+const app = require('../src/index');
 const crypto = require('crypto');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongoose = require('mongoose');
@@ -13,10 +13,25 @@ async function dbDisconnect() {
     await mongoose.connection.dropDatabase();
     await mongoose.connection.close();
 }
+let savedEmailText; // Variable to hold the captured email text
 
-// Runs once before all tests
+jest.mock('nodemailer', () => {
+    const nodemailerMock = {
+        sendMail: jest.fn((mailOptions, callback) => {
+            savedEmailText = mailOptions.text; // Capture the email text
+            callback(null, {
+                response: '250 Message accepted',
+            });
+        }),
+    };
+    return {
+        createTransport: jest.fn(() => nodemailerMock),
+    };
+});
+
+// Runs once before all tests are executed
 beforeAll(async () => dbConnect());
-// Runs once after all tests
+// Runs once after all tests are complete
 afterAll(async () => dbDisconnect());
 
 describe('POST /api/users', () => {
@@ -139,5 +154,52 @@ describe('POST /api/users', () => {
         expect(response.body.errors[0]).toHaveProperty('msg', 'Username must be at most 20 characters long');
         expect(response.body.errors[1]).toHaveProperty('msg', 'Email must be at most 71 characters long');
         expect(response.body.errors[2]).toHaveProperty('msg', 'Password must be at most 128 characters long');
+    });
+});
+
+describe('GET /api/users/verify', () => {
+    // Shouldn't need to test if the user doesn't exist because the JWT expires before mongo db deletes an unverified user
+    // Testing expired JWT is probbaly more fitting as a unit test not an integration test
+
+    // normal test
+    it('should successfully verify a user', async () => {
+        expect(savedEmailText).toBeDefined();
+        const token = savedEmailText.match(/token=(.*)/)[1];
+        const response = await request(app)
+            .get(`/api/users/verify?token=${token}`);
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty('message', 'Email verified');
+    });
+
+    // erroneous test
+    it('should fail to verify a user with an invalid token', async () => {
+        const response = await request(app)
+            .get('/api/users/verify?token=invalidtoken');
+        expect(response.status).toBe(401);
+        expect(response.body).toHaveProperty('error', 'Invalid token');
+    });
+
+    // erroneous test
+    it('should fail to verify an already verified user', async () => {
+        expect(savedEmailText).toBeDefined();
+        const token = savedEmailText.match(/token=(.*)/)[1];
+        const response = await request(app)
+            .get(`/api/users/verify?token=${token}`);
+        expect(response.status).toBe(404);
+        expect(response.body).toHaveProperty('error', 'User not found or already verified');
+    });
+});
+
+describe('POST /api/users/verify', () => {
+    // normal test
+    it('should successfully request verification and receive an email', async () => {
+        const response = await request(app)
+            .post('/api/users/verify')
+            .send({
+                email: 'test@test.com'
+            });
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty('message', 'Verification email sent');
+        expect(savedEmailText).toBeDefined();
     });
 });
