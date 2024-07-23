@@ -1,11 +1,11 @@
 require('dotenv').config();
 
 const express = require('express');
-const session = require('express-session');
 const mongoose = require('mongoose');
-const MongoStore = require('connect-mongo');
+
 const corsMiddleware = require('./config/corsOptions.js');
 const connectDB = require('./config/db');
+const sessionConfig = require('./config/sessionConfig');
 const { logger, errorHandler } = require('./api/middlewares');
 
 const app = express();
@@ -24,23 +24,7 @@ app.use(corsMiddleware);
 app.use(express.json());
 
 // session middleware need to move this to a separate file
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    store: MongoStore.create({
-      mongoUrl: process.env.DATABASE_URI,
-      collectionName: 'sessions',
-      ttl: 14 * 24 * 60 * 60, // 14 days
-      autoRemove: 'native', // Let MongoDB handle the removal of expired sessions
-    }),
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
-      secure: false,
-    },
-  })
-);
+app.use(sessionConfig);
 
 // Routes
 require('./api/routes')(app);

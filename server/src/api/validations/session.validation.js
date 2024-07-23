@@ -2,18 +2,13 @@ const { body } = require('express-validator');
 
 // I just need it so that if one of the two is provided, the other is not required but this seems to work well enough
 const loginUser = [
-  body('username')
-    .if((value, { req }) => !req.body.email) // If email is not provided, username is required
+  body('loginIdentifier')
+    .notEmpty()
+    .withMessage('Username or email is required')
+    .bail()
     .trim()
     .escape()
-    .bail(),
-  body('email')
-    .if((value, { req }) => !req.body.username) // If username is not provided, email is required
-    .trim()
-    .escape()
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Invalid email format')
+    .isString()
     .bail(),
   body('password')
     .notEmpty()
