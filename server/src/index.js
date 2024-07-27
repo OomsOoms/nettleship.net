@@ -4,15 +4,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 
 const corsMiddleware = require('./config/corsOptions.js');
-const connectDB = require('./config/db');
+const db = require('./config/db');
 const sessionConfig = require('./config/sessionConfig');
 const { logger, errorHandler } = require('./api/middlewares');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
-
-// Connect to MongoDB
-connectDB();
 
 // middleware for logging
 app.use(logger);
@@ -38,7 +35,8 @@ app.all('*', (req, res) => {
 });
 
 // Connect to server
-mongoose.connection.once('open', () => {
+db.connect()
+.then(() => {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on http://localhost:${PORT}/`);
   });
