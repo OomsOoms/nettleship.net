@@ -2,7 +2,6 @@ const jwt = require('jsonwebtoken');
 const { User } = require('../../src/api/models');
 const { userService } = require('../../src/api/services');
 
-// TODO: move these to ./__mocks__ folder
 jest.mock('jsonwebtoken', () => ({
     decode: jest.fn(),
 }));

@@ -3,6 +3,9 @@ const fs = require('fs');
 const fsPromises = require('fs').promises;
 
 async function logEvent(message, logFile = 'requestLog.log') {
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
   try {
     new Promise((resolve) => {
       console.log(message);

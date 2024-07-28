@@ -2,9 +2,8 @@ const jwt = require('jsonwebtoken');
 const { User } = require('../../src/api/models');
 const { userService } = require('../../src/api/services');
 
-// TODO: move these to ./__mocks__ folder
 jest.mock('jsonwebtoken', () => ({
-    sign: jest.fn(),
+    sign: jest.fn().mockImplementation(() => 'mockedToken'),
 }));
 
 jest.mock('../../src/api/models/User.model.js', () => ({
@@ -21,7 +20,7 @@ describe('userService.requestVerification', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         // Reset the mock implementation to return a controlled value
-        jwt.sign.mockImplementation(() => 'testToken');
+        jwt.sign.mockImplementation(() => 'mockedToken');
     });
 
     it('should throw an error if user not found or already verified', async () => {
@@ -46,8 +45,7 @@ describe('userService.requestVerification', () => {
     it('should send an email with verification link if user exists and not verified', async () => {
         const user = { _id: '123', email: 'test@example.com', active: false };
         User.findOne.mockResolvedValueOnce(user);
-        const token = 'testToken';
-        const verificationLink = 'http://localhost:4000/api/users/verify?token=testToken';
+        const verificationLink = 'http://localhost:4000/api/users/verify?token=mockedToken';
 
         await userService.requestVerification('test@example.com');
 

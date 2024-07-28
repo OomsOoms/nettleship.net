@@ -41,10 +41,8 @@ describe('GET /api/users/verify', () => {
   it('should return an error if user is already verified', async () => {
     user.active = true;
     await user.save();
-    console.log(user);
     const token = generateJwt({ id: user._id }, { expiresIn: '10m' });
     const response = await request(app).get(`/api/users/verify?token=${token}`);
-    console.log(response.body);
     expect(response.status).toBe(400);
     expect(response.body.message).toBe('User already verified');
   });

@@ -6,10 +6,20 @@ import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 // Define your ESLint configuration
 export default [
   { files: ['**/*.js'], languageOptions: { sourceType: 'commonjs' } },
-  { languageOptions: { globals: { ...globals.browser, process: true } } },
+  {
+    languageOptions: {
+      globals: { ...globals.browser, process: true, jest: 'readonly' },
+    },
+  },
   pluginJs.configs.recommended,
   {
-    ignores: ['**/*.test.js', '**/*.spec.js', 'docs/**', 'coverage/**'],
+    ignores: [
+      '**/*.test.js',
+      '**/*.spec.js',
+      '**/*.setup.js',
+      'docs/**',
+      'coverage/**',
+    ],
   },
   {
     files: ['**/*.js'],
