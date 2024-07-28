@@ -1,7 +1,7 @@
-const userValidator = require('./user.validation');
-const sessionValidator = require('./session.validation');
+const userValidatonRules = require('./user.validation');
+const sessionValidatonRules = require('./session.validation');
 
 module.exports = {
-  userValidator,
-  sessionValidator,
+  userValidatonRules,
+  sessionValidatonRules,
 };

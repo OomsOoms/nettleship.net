@@ -1,14 +1,12 @@
-const verifyJwt = require('./verifyJwt');
 const logger = require('./logger');
 const errorHandler = require('./errorHandler');
-const validateRequest = require('./validateRequest');
+const validate = require('./validate');
 const sessionAuth = require('./sessionAuth');
 
 module.exports = {
   logger,
-  verifyJwt,
   errorHandler,
-  validateRequest,
+  validate,
   sessionAuth,
 };
 

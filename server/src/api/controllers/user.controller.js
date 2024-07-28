@@ -1,19 +1,26 @@
 const { userService } = require('../services');
-//const { decodeJwt } = require('../helpers');
-const jwt = require('jsonwebtoken');
 /**
  * Errors are caught in the error handler middleware so only the success response is sent
  */
 
 /**
- * @desc Register a new user
+ * @desc Verify user
+ * @method GET
+ */
+async function verifyUser(req, res) {
+  const token = req.query.token;
+  await userService.verifyUser(token);
+  res.status(200).json({ message: 'Email verified' });
+}
+
+/**
+ * @desc Request verification
  * @method POST
  */
-async function registerUser(req, res) {
-  // get the username, email, and password from the request body
-  const { username, email, password } = req.body;
-  const user = await userService.registerUser(username, email, password);
-  res.status(201).json(user);
+async function requestVerification(req, res) {
+  const { email } = req.body;
+  await userService.requestVerification(email);
+  res.status(200).json({ message: 'Verification email sent' });
 }
 
 /**
@@ -25,32 +32,6 @@ async function getAllUsers(req, res) {
   const { id } = req.user;
   const users = await userService.getAllUsers(id);
   res.status(200).json(users);
-}
-
-async function verifyUser(req, res) {
-  // Get the id from the verified param token
-  // for some reason when I use the decodeJwt helper function it doesn't work but only when I use the session middlewear before the routes are defined, but not after idfk
-  const token = req.query.token;
-  try {
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    req.user = decoded;
-  } catch (err) {
-    // make this throw errors instead of sending responses
-    if (err instanceof jwt.TokenExpiredError) {
-      return res.status(401).json({ error: 'Token has expired' });
-    } else {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-  }
-  const { id } = req.user;
-  await userService.verifyUser(id);
-  res.status(200).json({ message: 'Email verified' });
-}
-
-async function requestVerification(req, res) {
-  const { email } = req.body;
-  await userService.requestVerification(email);
-  res.status(200).json({ message: 'Verification email sent' });
 }
 
 /**
@@ -68,6 +49,16 @@ async function getCurrentUser(req, res) {
       email: user.email,
     },
   });
+}
+/**
+ * @desc Register a new user
+ * @method POST
+ */
+async function registerUser(req, res) {
+  // get the username, email, and password from the request body
+  const { username, email, password } = req.body;
+  const user = await userService.registerUser(username, email, password);
+  res.status(201).json(user);
 }
 
 /**
@@ -110,11 +101,11 @@ async function deleteUser(req, res) {
 }
 
 module.exports = {
-  registerUser,
-  getAllUsers,
   verifyUser,
   requestVerification,
+  getAllUsers,
   getCurrentUser,
+  registerUser,
   updateUser,
   deleteUser,
 };

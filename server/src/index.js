@@ -1,7 +1,6 @@
 require('dotenv').config();
 
 const express = require('express');
-const mongoose = require('mongoose');
 
 const corsMiddleware = require('./config/corsOptions.js');
 const db = require('./config/db');
@@ -35,8 +34,7 @@ app.all('*', (req, res) => {
 });
 
 // Connect to server
-db.connect()
-.then(() => {
+db.connect().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on http://localhost:${PORT}/`);
   });

@@ -1,6 +1,60 @@
 const { User } = require('../models');
 const { generateJwt, comparePasswords, sendEmail } = require('../helpers');
 const { Error } = require('../helpers');
+const jwt = require('jsonwebtoken');
+
+async function verifyUser(token) {
+  const decodedToken = jwt.decode(token);
+  if (!decodedToken || !decodedToken.id) {
+    throw Error.invalidRequest('Invalid token');
+  }
+  const user = await User.findById(decodedToken.id);
+  if (!user) {
+    throw Error.userNotFound('User not found');
+  }
+  if (user.active) {
+    throw Error.invalidRequest('User already verified');
+  }
+
+  const userId = decodedToken.id;
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $set: { active: true } },
+    { new: true } // new option returns the updated document
+  );
+
+  return updatedUser;
+}
+
+async function requestVerification(email) {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw Error.userNotFound('User not found');
+  }
+  if (user.active) {
+    throw Error.invalidRequest('User already verified');
+  }
+  const token = generateJwt({ id: user._id });
+  const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
+  sendEmail(email, 'Verify your email', verificationLink);
+}
+
+async function getAllUsers(id) {
+  const user = await User.findById(id);
+  if (!user.roles.includes('admin')) {
+    throw Error.invalidCredentials();
+  }
+  const users = await User.find();
+  return users;
+}
+
+async function getCurrentUser(id) {
+  const user = await User.findById(id);
+  if (!user) {
+    throw Error.userNotFound(`User with id ${id} not found`);
+  }
+  return user;
+}
 
 async function registerUser(username, email, password) {
   try {
@@ -41,44 +95,6 @@ async function registerUser(username, email, password) {
   }
 }
 
-// Figure out what im doing with JWT because this isnt very stateless
-async function getAllUsers(id) {
-  const user = await User.findById(id);
-  if (!user.roles.includes('admin')) {
-    throw Error.invalidCredentials();
-  }
-  const users = await User.find();
-  return users;
-}
-
-async function verifyUser(id) {
-  const user = await User.findById(id);
-  if (!user || user.active) {
-    throw Error.userNotFound('User not found or already verified');
-  }
-  user.active = true;
-  await user.save();
-}
-
-async function requestVerification(email) {
-  const user = await User.findOne({ email });
-  if (!user || user.active) {
-    throw Error.userNotFound('User not found or already verified');
-  }
-  const token = generateJwt({ id: user._id });
-  const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
-  sendEmail(email, 'Verify your email', verificationLink);
-}
-
-async function getCurrentUser(id) {
-  const user = await User.findById(id);
-  if (!user) {
-    throw Error.userNotFound(`User with id ${id} not found`);
-  }
-  return user;
-}
-
-// probably change this to not require password
 async function updateUser(id, password, newUsername, newEmail, newPassword) {
   try {
     const user = await User.findById(id);
@@ -128,11 +144,11 @@ async function deleteUser(id, password) {
 }
 
 module.exports = {
-  registerUser,
-  getAllUsers,
   verifyUser,
   requestVerification,
+  getAllUsers,
   getCurrentUser,
+  registerUser,
   updateUser,
   deleteUser,
 };

@@ -32,7 +32,7 @@ const registerUser = [
     .bail()
     .isEmail() // this also checks the length so the values I picked were based off of this, just so i can get better error messages
     .normalizeEmail()
-    .withMessage('Invalid email format')
+    .withMessage('Invalid email')
     .bail(),
   body('password')
     .trim()
@@ -84,7 +84,7 @@ const updateUser = [
     .escape()
     .isEmail()
     .normalizeEmail()
-    .withMessage('Invalid email format')
+    .withMessage('Invalid email')
     .bail(),
   body('newPassword')
     .optional()
@@ -112,9 +112,23 @@ const deleteUser = [
     .bail(),
 ];
 
+const requestVerification = [
+  body('email')
+    .notEmpty()
+    .withMessage('Email is required')
+    .bail()
+    .trim()
+    .escape()
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Invalid email')
+    .bail(),
+];
+
 module.exports = {
   registerUser,
   getCurrentUser,
   updateUser,
   deleteUser,
+  requestVerification,
 };

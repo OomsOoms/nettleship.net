@@ -22,7 +22,7 @@ const errorHandler = (error, req, res, next) => {
   logEvent(detailedErrorMessage, 'errorLog.log');
 
   // Send a response to the client
-  res.status(errorStatus).json({ error: errorMessage });
+  res.status(errorStatus).json({ message: errorMessage });
 };
 
 module.exports = errorHandler;

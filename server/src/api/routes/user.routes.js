@@ -1,32 +1,16 @@
 const router = require('express-promise-router')();
-const { userController } = require('../controllers');
-const { userValidator } = require('../validations');
-const { verifyJwt, validateRequest } = require('../middlewares');
+const { userController: uc } = require('../controllers');
+const { userValidatonRules: uvr } = require('../validations');
+const { validate, sessionAuth } = require('../middlewares');
 
+// /api/users
 router
-  .route('/')
-  .get(verifyJwt, userController.getAllUsers)
-  .post(
-    userValidator.registerUser,
-    validateRequest,
-    userController.registerUser
-  );
-
-// Probably make its own jwt function since its a token param
-router
-  .route('/verify')
-  .get(userController.verifyUser)
-  .post(userController.requestVerification);
-
-router.use(verifyJwt);
-router
-  .route('/me')
-  .get(
-    userValidator.getCurrentUser,
-    validateRequest,
-    userController.getCurrentUser
-  )
-  .put(userValidator.updateUser, validateRequest, userController.updateUser)
-  .delete(userValidator.deleteUser, validateRequest, userController.deleteUser);
+  .get('/verify', uc.verifyUser)
+  .post('/verify', uvr.requestVerification, validate, uc.requestVerification)
+  .get('/', sessionAuth, uc.getAllUsers)
+  .get('/:username', uvr.getCurrentUser, validate, uc.getCurrentUser)
+  .post('/', uvr.registerUser, validate, uc.registerUser)
+  .put('/:username', uvr.updateUser, validate, uc.updateUser)
+  .delete('/:username', uvr.deleteUser, validate, uc.deleteUser);
 
 module.exports = router;

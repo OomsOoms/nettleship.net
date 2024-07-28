@@ -1,14 +1,10 @@
 const router = require('express-promise-router')();
 const { sessionController } = require('../controllers');
-const { sessionValidator } = require('../validations');
-const { validateRequest } = require('../middlewares');
+const { sessionValidatonRules } = require('../validations');
+const { validate } = require('../middlewares');
 
 router
   .route('/')
-  .post(
-    sessionValidator.loginUser,
-    validateRequest,
-    sessionController.loginUser
-  );
+  .post(sessionValidatonRules.loginUser, validate, sessionController.loginUser);
 
 module.exports = router;
