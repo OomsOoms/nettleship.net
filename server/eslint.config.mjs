@@ -2,7 +2,6 @@ import globals from 'globals';
 import pluginJs from '@eslint/js';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import eslintJest from 'eslint-plugin-jest';
 
 // Define your ESLint configuration
 export default [
@@ -39,5 +38,4 @@ export default [
   },
   eslintConfigPrettier,
   eslintPluginPrettierRecommended,
-  eslintJest,
 ];
