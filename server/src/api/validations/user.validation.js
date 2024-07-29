@@ -1,5 +1,18 @@
 const { body } = require('express-validator');
 
+const requestVerification = [
+  body('email')
+    .notEmpty()
+    .withMessage('Email is required')
+    .bail()
+    .trim()
+    .escape()
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Invalid email')
+    .bail(),
+];
+
 const registerUser = [
   body('username')
     .trim()
@@ -49,9 +62,6 @@ const registerUser = [
     .withMessage('Password must be at most 128 characters long')
     .bail(),
 ];
-
-// Only require the user to be authenticated which is done in other middlewear in the router
-const getCurrentUser = [];
 
 const updateUser = [
   body('password')
@@ -112,22 +122,8 @@ const deleteUser = [
     .bail(),
 ];
 
-const requestVerification = [
-  body('email')
-    .notEmpty()
-    .withMessage('Email is required')
-    .bail()
-    .trim()
-    .escape()
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Invalid email')
-    .bail(),
-];
-
 module.exports = {
   registerUser,
-  getCurrentUser,
   updateUser,
   deleteUser,
   requestVerification,

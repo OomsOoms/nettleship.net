@@ -42,16 +42,16 @@ async function requestVerification(email) {
 async function getAllUsers(id) {
   const user = await User.findById(id);
   if (!user.roles.includes('admin')) {
-    throw Error.invalidCredentials();
+    throw Error.invalidCredentials('User is not an admin');
   }
   const users = await User.find();
   return users;
 }
 
-async function getCurrentUser(id) {
-  const user = await User.findById(id);
+async function getUserByUsername(username) {
+  const user = await User.findOne({ username });
   if (!user) {
-    throw Error.userNotFound(`User with id ${id} not found`);
+    throw Error.userNotFound(`User with username '${username}' not found`);
   }
   return user;
 }
@@ -147,7 +147,7 @@ module.exports = {
   verifyUser,
   requestVerification,
   getAllUsers,
-  getCurrentUser,
+  getUserByUsername,
   registerUser,
   updateUser,
   deleteUser,

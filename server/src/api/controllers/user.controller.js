@@ -38,10 +38,10 @@ async function getAllUsers(req, res) {
  * @desc Get current user (From id in token)
  * @method GET
  */
-async function getCurrentUser(req, res) {
+async function getUserByUsername(req, res) {
   // get the id from the verified token
-  const { id } = req.user;
-  const user = await userService.getCurrentUser(id);
+  const username = req.params.username;
+  const user = await userService.getUserByUsername(username);
   res.status(200).json({
     user: {
       id: user._id,
@@ -104,7 +104,7 @@ module.exports = {
   verifyUser,
   requestVerification,
   getAllUsers,
-  getCurrentUser,
+  getUserByUsername,
   registerUser,
   updateUser,
   deleteUser,
