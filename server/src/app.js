@@ -3,9 +3,9 @@ require('dotenv').config();
 const express = require('express');
 
 const corsMiddleware = require('./config/corsOptions.js');
-const db = require('./config/db');
-const sessionConfig = require('./config/sessionConfig');
-const { logger, errorHandler } = require('./api/middlewares');
+const db = require('./config/db.js');
+const sessionConfig = require('./config/sessionConfig.js');
+const { logger, errorHandler } = require('./api/middlewares/index.js');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -23,7 +23,7 @@ app.use(express.json());
 app.use(sessionConfig);
 
 // Routes
-require('./api/routes')(app);
+require('./api/routes/index.js')(app);
 
 // Error handling middleware
 app.use(errorHandler);

@@ -1,7 +1,7 @@
 const { User } = require('../../src/api/models');
 const { userService } = require('../../src/api/services');
 
-jest.mock('../../src/api/models/User.model.js', () => ({
+jest.mock('../../src/api/models/user.model.js', () => ({
     findOne: jest.fn(),
 }));
 

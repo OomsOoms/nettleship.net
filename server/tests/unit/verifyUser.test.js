@@ -6,7 +6,7 @@ jest.mock('jsonwebtoken', () => ({
     decode: jest.fn(),
 }));
 
-jest.mock('../../src/api/models/User.model.js', () => ({
+jest.mock('../../src/api/models/user.model.js', () => ({
     findByIdAndUpdate: jest.fn(),
     findById: jest.fn(),
     findOne: jest.fn(),

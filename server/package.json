@@ -1,20 +1,24 @@
 {
-  "name": "server",
+  "name": "nettleship-net-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "src/index.js",
+  "description": "This is the API backend for the nettleship.net website ",
+  "main": "src/app.js",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "start": "node src/index",
-    "dev": "nodemon src/index",
+    "start": "node src/app",
+    "dev": "nodemon src/app",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Thomas Nettleship",
+  "license": "GPL-3.0",
+  "private": true,
+  "engines": {
+    "node": "22.2.0"
+  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "connect-mongo": "^5.1.0",

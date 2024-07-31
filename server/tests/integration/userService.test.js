@@ -1,7 +1,23 @@
 const request = require('supertest');
-const app = require('../../src/index');
+const app = require('../../src/app');
 const { User } = require('../../src/api/models');
 const { generateJwt } = require('../../src/api/helpers');
+const nodemailer = require('nodemailer');
+
+let savedEmailText;
+jest.mock('nodemailer', () => {
+  const nodemailerMock = {
+    sendMail: jest.fn((mailOptions, callback) => {
+      savedEmailText = mailOptions.text; // Capture the email text
+      callback(null, {
+        response: '250 Message accepted',
+      });
+    }),
+  };
+  return {
+    createTransport: jest.fn(() => nodemailerMock),
+  };
+})
 
 let token = '';
 let user = null;
@@ -53,6 +69,7 @@ describe('POST /api/users/verify', () => {
     const response = await request(app)
       .post('/api/users/verify')
       .send({ email: 'test@example.com' });
+    console.log(response.body);
     expect(response.status).toBe(200);
     expect(response.body.message).toBe('Verification email sent');
     // should check if the email was sent? seems like effort though and if i write a unit test for the email function then i would be testing it twice
