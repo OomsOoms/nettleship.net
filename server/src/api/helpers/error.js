@@ -1,32 +1,32 @@
-class Error {
+class CustomError extends Error {
   constructor(status, message) {
+    super(message);
     this.status = status;
-    this.message = message;
   }
 
   static invalidRequest(message = 'Invalid request') {
-    return new Error(400, message);
+    return new CustomError(400, message);
   }
 
   static invalidCredentials(message = 'Invalid credentials') {
-    return new Error(401, message);
+    return new CustomError(401, message);
   }
 
   static accountNotActive(message = 'Account not active') {
-    return new Error(403, message);
+    return new CustomError(403, message);
   }
 
   static userNotFound(message = 'User not found') {
-    return new Error(404, message);
+    return new CustomError(404, message);
   }
 
   static mongoConflictError(message = 'MongoDB conflict error') {
-    return new Error(409, message);
+    return new CustomError(409, message);
   }
 
   static serverError(message = 'Internal server error') {
-    return new Error(500, message);
+    return new CustomError(500, message);
   }
 }
 
-module.exports = Error;
+module.exports = CustomError;

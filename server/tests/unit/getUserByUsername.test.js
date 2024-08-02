@@ -1,7 +1,7 @@
 const { User } = require('../../src/api/models');
-const { userService } = require('../../src/api/services');
+const { getUserByUsername } = require('../../src/api/services/user.service');
 
-jest.mock('../../src/api/models/user.model.js', () => ({
+jest.mock('../../src/api/models/user.model', () => ({
     findOne: jest.fn(),
 }));
 
@@ -14,7 +14,7 @@ describe('userService.getUserByUsername', () => {
         const mockUser = { username: 'testUser', email: 'test@example.com' };
         User.findOne.mockResolvedValue(mockUser);
 
-        const result = await userService.getUserByUsername('testUser');
+        const result = await getUserByUsername('testUser');
         expect(result).toEqual(mockUser);
         expect(User.findOne).toHaveBeenCalledWith({ username: 'testUser' });
     });
@@ -22,10 +22,6 @@ describe('userService.getUserByUsername', () => {
     it('should throw an error if the user does not exist', async () => {
         User.findOne.mockResolvedValue(null);
 
-        try {
-            await userService.getUserByUsername('testUser');
-        } catch (error) {
-            expect(error.message).toBe("User with username 'testUser' not found");
-        }
+        await expect(getUserByUsername('testUser')).rejects.toThrow("User with username 'testUser' not found");
     });
 });

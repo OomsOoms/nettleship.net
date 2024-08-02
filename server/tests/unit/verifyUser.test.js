@@ -1,15 +1,14 @@
-const jwt = require('jsonwebtoken');
 const { User } = require('../../src/api/models');
-const { userService } = require('../../src/api/services');
+const { verifyUser } = require('../../src/api/services/user.service');
+const jwt = require('jsonwebtoken');
 
 jest.mock('jsonwebtoken', () => ({
     decode: jest.fn(),
 }));
 
-jest.mock('../../src/api/models/user.model.js', () => ({
+jest.mock('../../src/api/models/user.model', () => ({
     findByIdAndUpdate: jest.fn(),
     findById: jest.fn(),
-    findOne: jest.fn(),
 }));
 
 describe('userService.verifyUser', () => {
@@ -20,17 +19,17 @@ describe('userService.verifyUser', () => {
     it('successfully verifies a user with a valid token', async () => {
         const token = 'validToken';
         const userId = '123';
-        const userData = { id: userId, name: 'Test User' };
+        const mockedUser = { id: userId, active: false };
 
-        jwt.decode.mockReturnValue(userData);
-        User.findById.mockResolvedValue(userData);
-        User.findByIdAndUpdate.mockResolvedValue({ ...userData, active: true });
+        jwt.decode.mockReturnValue(mockedUser);
+        User.findById.mockResolvedValue(mockedUser);
+        User.findByIdAndUpdate.mockResolvedValue({ ...mockedUser, active: true });
 
-        const result = await userService.verifyUser(token);
+        const result = await verifyUser(token);
 
         expect(jwt.decode).toHaveBeenCalledWith(token);
         expect(User.findByIdAndUpdate).toHaveBeenCalledWith(userId, { $set: { active: true } }, { new: true });
-        expect(result).toEqual({ ...userData, active: true });
+        expect(result).toEqual({ ...mockedUser, active: true });
     });
 
     it('throws an error for an invalid token', async () => {
@@ -38,11 +37,7 @@ describe('userService.verifyUser', () => {
 
         jwt.decode.mockReturnValue(null);
 
-        try {
-            await userService.verifyUser(token);
-        } catch (error) {
-            expect(error.message).toBe('Invalid token');
-        }
+        await expect(verifyUser(token)).rejects.toThrow('Invalid token');
     });
 
     it('throws an error when no token is provided', async () => {
@@ -50,11 +45,7 @@ describe('userService.verifyUser', () => {
 
         jwt.decode.mockReturnValue(null);
 
-        try {
-            await userService.verifyUser(token);
-        } catch (error) {
-            expect(error.message).toBe('Invalid token');
-        }
+        await expect(verifyUser(token)).rejects.toThrow('Invalid token');
     });
 
     it('throws an error for a non-existent user', async () => {
@@ -62,28 +53,19 @@ describe('userService.verifyUser', () => {
         const userId = '999'; // Assuming this user does not exist
 
         jwt.decode.mockReturnValue({ id: userId });
-        User.findByIdAndUpdate.mockResolvedValue(null);
+        User.findById.mockResolvedValue(null);
 
-        try {
-            await userService.verifyUser(token);
-        } catch (error) {
-            expect(error.message).toBe('User not found');
-        }
+        await expect(verifyUser(token)).rejects.toThrow('User not found');
     });
 
     it('does not change the status of an already verified user', async () => {
         const token = 'validTokenForVerifiedUser';
-        const userId = '123';
-        const userData = { id: userId, name: 'Test User', active: true };
+        const mockedUser = { id: '123', name: 'Test User', active: true };
 
-        jwt.decode.mockReturnValue(userData);
-        User.findById.mockResolvedValue(userData);
-        User.findByIdAndUpdate.mockResolvedValue(userData); // User remains unchanged
+        jwt.decode.mockReturnValue(mockedUser);
+        User.findById.mockResolvedValue(mockedUser);
+        User.findByIdAndUpdate.mockResolvedValue(mockedUser); // User remains unchanged
 
-        try {
-            await userService.verifyUser(token);
-        } catch (error) {
-            expect(error.message).toBe('User already verified');
-        }
+        await expect(verifyUser(token)).rejects.toThrow('User already verified');
     });
 });
