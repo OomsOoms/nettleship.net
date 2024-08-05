@@ -57,42 +57,21 @@ async function getUserByUsername(username) {
 }
 
 async function registerUser(username, email, password) {
-  try {
-    // Few details are needed to create a user, this is to reduce friction in the registration process
-    const user = new User({ username, email, password });
-    await user.save();
-    const token = generateJwt({ id: user._id }, { expiresIn: '10m' });
-    const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
-    sendEmail(email, 'Verify your email', verificationLink);
-    return {
-      success: true,
-      message:
-        'User created successfully, email verification link sent and will expire in 10 minutes',
-      user: {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        active: user.active,
-        profile: {
-          bio: user.profile.bio,
-          profilePicture: user.profile.profilePicture,
-          displayName: user.profile.displayName,
-        },
-        settings: {
-          language: user.settings.language,
-        },
-      },
-    };
-  } catch (error) {
-    if (error.code === 11000) {
-      if (error.keyValue.username) {
-        throw Error.mongoConflictError('Username already exists');
-      } else {
-        throw Error.mongoConflictError('Email already exists');
-      }
+  const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+  if (existingUser) {
+    if (existingUser.email === email) {
+      throw Error.mongoConflictError('Email already exists');
     }
-    throw error;
+    if (existingUser.username === username) {
+      throw Error.mongoConflictError('Username already exists');
+    }
   }
+  // Few details are needed to create a user, this is to reduce friction in the registration process
+  const user = new User({ username, email, password });
+  await user.save();
+  const token = generateJwt({ id: user._id }, { expiresIn: '10m' });
+  const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
+  sendEmail(email, 'Verify your email', verificationLink);
 }
 
 async function updateUser(id, password, newUsername, newEmail, newPassword) {
@@ -137,8 +116,11 @@ async function updateUser(id, password, newUsername, newEmail, newPassword) {
 
 async function deleteUser(id, password) {
   const user = await User.findById(id);
-  if (!user || !(await comparePasswords(password, user.password))) {
-    throw Error.invalidCredentials();
+  if (!user) {
+    throw Error.userNotFound('User not found');
+  }
+  if (!(await comparePasswords(password, user.password))) {
+    throw Error.invalidCredentials('Invalid password');
   }
   await User.deleteOne({ _id: id });
 }

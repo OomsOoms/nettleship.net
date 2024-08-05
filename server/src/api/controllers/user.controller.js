@@ -57,8 +57,12 @@ async function getUserByUsername(req, res) {
 async function registerUser(req, res) {
   // get the username, email, and password from the request body
   const { username, email, password } = req.body;
-  const user = await userService.registerUser(username, email, password);
-  res.status(201).json(user);
+  await userService.registerUser(username, email, password);
+  res
+    .status(201)
+    .json(
+      'User created successfully, email verification link sent and will expire in 10 minutes'
+    );
 }
 
 /**
