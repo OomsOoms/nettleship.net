@@ -26,7 +26,7 @@ beforeEach(async () => {
   await User.deleteMany({});
   user = new User({
     username: 'username',
-    email: 'test@example.com',
+    unverifiedEmail: 'test@example.com',
     password: 'password',
   });
   await user.save();
@@ -55,7 +55,7 @@ describe('GET /api/users/verify', () => {
   });
 
   it('should return an error if user is already verified', async () => {
-    user.active = true;
+    user.accountVerified = true;
     await user.save();
     const token = generateJwt({ id: user._id }, { expiresIn: '10m' });
     const response = await request(app).get(`/api/users/verify?token=${token}`);
@@ -76,7 +76,7 @@ describe('POST /api/users/verify', () => {
   });
 
   it('should return an error if user is already verified', async () => {
-    user.active = true;
+    user.accountVerified = true;
     await user.save();
     const response = await request(app)
       .post('/api/users/verify')

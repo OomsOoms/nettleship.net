@@ -60,9 +60,7 @@ async function registerUser(req, res) {
   await userService.registerUser(username, email, password);
   res
     .status(201)
-    .json(
-      'User created successfully, email verification link sent and will expire in 10 minutes'
-    );
+    .json({ message: 'User registered successfully, check your email' });
 }
 
 /**

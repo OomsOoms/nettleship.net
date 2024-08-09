@@ -18,13 +18,13 @@ describe('userService.requestVerification', () => {
     });
 
     it('should send an email with verification link if user exists and not verified', async () => {
-        const mockedUser = { _id: '123', email: 'test@example.com', active: false };
+        const mockedUser = { _id: '123', unverifiedEmail: 'test@example.com', accountVerified: false };
         User.findOne.mockResolvedValueOnce(mockedUser);
         const verificationLink = 'http://localhost:4000/api/users/verify?token=mockedToken';
 
         await requestVerification('test@example.com');
 
-        expect(User.findOne).toHaveBeenCalledWith({ email: 'test@example.com' });
+        expect(User.findOne).toHaveBeenCalledWith({ unverifiedEmail: 'test@example.com' });
         expect(sendEmail).toHaveBeenCalledWith('test@example.com', 'Verify your email', verificationLink);
     });
 
@@ -35,7 +35,7 @@ describe('userService.requestVerification', () => {
     });
 
     it('should throw an error if user is already verified', async () => {
-        const mockedUser = { _id: '123', email: 'test@example.com', active: true };
+        const mockedUser = { _id: '123', email: 'test@example.com', accountVerified: true };
         User.findOne.mockResolvedValueOnce(mockedUser);
         
         await expect(requestVerification('test@example.com')).rejects.toThrow('User already verified');

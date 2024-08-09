@@ -18,7 +18,6 @@ describe('userService.registerUser', () => {
         User.findOne.mockResolvedValue(null);
 
         await registerUser('newuser', 'newuser@test.com', 'password');
-        expect(User.findOne).toHaveBeenCalledWith({ $or: [{ email: 'newuser@test.com' }, { username: 'newuser' }] });
         expect(generateJwt).toHaveBeenCalled();
         expect(sendEmail).toHaveBeenCalledWith('newuser@test.com', 'Verify your email', expect.any(String));
         // should probably check if user.save() is called but im not sure how to do that
@@ -27,6 +26,10 @@ describe('userService.registerUser', () => {
     it('should throw an error if the email already exists', async () => {
         const mockUser = { username: 'test', email: 'test@example.com', password: 'test123' };
         User.findOne.mockResolvedValue(mockUser);
+        const mockError = new Error();
+        mockError.code = 11000;
+        mockError.keyPattern = { email: 1 };
+        User.prototype.save.mockRejectedValue(mockError);
 
         await expect(registerUser(mockUser.username, mockUser.email, mockUser.password)).rejects.toThrow('Email already exists');
     });
@@ -34,6 +37,10 @@ describe('userService.registerUser', () => {
     it('should throw an error if the username already exists', async () => {
         const mockUser = { username: 'test', email: 'test@example.com', password: 'test123' };
         User.findOne.mockResolvedValue(mockUser);
+        const mockError = new Error();
+        mockError.code = 11000;
+        mockError.keyPattern = { username: 1 };
+        User.prototype.save.mockRejectedValue(mockError);
 
         await expect(registerUser(mockUser.username, 'different@email.com', mockUser.password)).rejects.toThrow('Username already exists');
     });

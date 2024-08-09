@@ -19,17 +19,18 @@ describe('userService.verifyUser', () => {
     it('successfully verifies a user with a valid token', async () => {
         const token = 'validToken';
         const userId = '123';
-        const mockedUser = { id: userId, active: false };
+        const mockedUser = { id: userId, accountVerified: false };
 
         jwt.decode.mockReturnValue(mockedUser);
         User.findById.mockResolvedValue(mockedUser);
-        User.findByIdAndUpdate.mockResolvedValue({ ...mockedUser, active: true });
+        User.findByIdAndUpdate.mockResolvedValue({ ...mockedUser, accountVerified: true });
 
         const result = await verifyUser(token);
 
         expect(jwt.decode).toHaveBeenCalledWith(token);
-        expect(User.findByIdAndUpdate).toHaveBeenCalledWith(userId, { $set: { active: true } }, { new: true });
-        expect(result).toEqual({ ...mockedUser, active: true });
+        expect(User.findByIdAndUpdate).toHaveBeenCalledWith(userId, {
+            $set: { accountVerified: true, unverifiedEmail: '', email: mockedUser.unverifiedEmail } }, { new: true });
+        expect(result).toEqual({ ...mockedUser, accountVerified: true });
     });
 
     it('throws an error for an invalid token', async () => {
@@ -60,7 +61,7 @@ describe('userService.verifyUser', () => {
 
     it('does not change the status of an already verified user', async () => {
         const token = 'validTokenForVerifiedUser';
-        const mockedUser = { id: '123', name: 'Test User', active: true };
+        const mockedUser = { id: '123', name: 'Test User', accountVerified: true };
 
         jwt.decode.mockReturnValue(mockedUser);
         User.findById.mockResolvedValue(mockedUser);

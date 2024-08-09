@@ -12,31 +12,26 @@ async function verifyUser(token) {
   if (!user) {
     throw Error.userNotFound('User not found');
   }
-  if (user.active) {
-    throw Error.invalidRequest('User already verified');
+  if (!user.unverifiedEmail) {
+    throw Error.invalidRequest('Email already verified');
   }
-
-  const userId = decodedToken.id;
-  const updatedUser = await User.findByIdAndUpdate(
-    userId,
-    { $set: { active: true } },
-    { new: true } // new option returns the updated document
-  );
-
-  return updatedUser;
+  user.unverifiedEmail = '';
+  await user.save();
 }
 
-async function requestVerification(email) {
-  const user = await User.findOne({ email });
+async function requestVerification(unverifiedEmail) {
+  const user = await User.findOne({
+    $or: [{ unverifiedEmail }, { email: unverifiedEmail }],
+  });
   if (!user) {
     throw Error.userNotFound('User not found');
   }
-  if (user.active) {
+  if (user.accountVerified) {
     throw Error.invalidRequest('User already verified');
   }
-  const token = generateJwt({ id: user._id });
+  const token = generateJwt({ id: user._id }, { expiresIn: '24h' });
   const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
-  sendEmail(email, 'Verify your email', verificationLink);
+  sendEmail(unverifiedEmail, 'Verify your email', verificationLink);
 }
 
 async function getAllUsers(id) {
@@ -56,22 +51,23 @@ async function getUserByUsername(username) {
   return user;
 }
 
-async function registerUser(username, email, password) {
-  const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-  if (existingUser) {
-    if (existingUser.email === email) {
-      throw Error.mongoConflictError('Email already exists');
+async function registerUser(username, unverifiedEmail, password) {
+  try {
+    const user = new User({ username, unverifiedEmail, password });
+    await user.save();
+    const token = generateJwt({ id: user._id }, { expiresIn: '24h' });
+    const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
+    sendEmail(unverifiedEmail, 'Verify your email', verificationLink);
+  } catch (error) {
+    if (error.code === 11000) {
+      if (error.keyPattern.email || error.keyPattern.unverifiedEmail) {
+        throw Error.mongoConflictError('Email already exists');
+      } else if (error.keyPattern.username) {
+        throw Error.mongoConflictError('Username already exists');
+      }
     }
-    if (existingUser.username === username) {
-      throw Error.mongoConflictError('Username already exists');
-    }
+    throw error;
   }
-  // Few details are needed to create a user, this is to reduce friction in the registration process
-  const user = new User({ username, email, password });
-  await user.save();
-  const token = generateJwt({ id: user._id }, { expiresIn: '10m' });
-  const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
-  sendEmail(email, 'Verify your email', verificationLink);
 }
 
 async function updateUser(id, password, newUsername, newEmail, newPassword) {
