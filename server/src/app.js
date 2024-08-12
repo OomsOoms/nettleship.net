@@ -5,7 +5,11 @@ const express = require('express');
 const corsMiddleware = require('./config/corsOptions.js');
 const db = require('./config/db.js');
 const sessionConfig = require('./config/sessionConfig.js');
-const { logger, errorHandler } = require('./api/middlewares/index.js');
+const {
+  logger,
+  errorHandler,
+  rateLimiter,
+} = require('./api/middlewares/index.js');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -22,13 +26,14 @@ app.use(express.json());
 // session middleware need to move this to a separate file
 app.use(sessionConfig);
 
-// Routes
+// rate limiter middleware - limits the number of requests from an IP
+app.use(rateLimiter.generalLimiter);
+
+// routes
 require('./api/routes/index.js')(app);
 
-// Error handling middleware
+// error handling middleware
 app.use(errorHandler);
-
-// Error handling middleware
 app.all('*', (req, res) => {
   res.status(404).json({ message: '404 Route does not exist' });
 });

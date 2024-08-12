@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hCaptcha Test</title>
+    <script src="https://hcaptcha.com/1/api.js" async defer></script>
+</head>
+
+<body>
+    <p>Browser locale:
+        <script>document.write(navigator.language);</script>
+    </p>
+    <form id="captchaForm">
+        <div class="h-captcha" data-sitekey="798876a4-47b6-480a-b92c-45bedfc45272"></div>
+        <button type="button" onclick="getCaptchaToken()">Get Token</button>
+    </form>
+    <p id="token"></p>
+
+    <script>
+        function getCaptchaToken() {
+            const captchaResponse = hcaptcha.getResponse();
+            if (!captchaResponse) {
+                alert('Please complete the CAPTCHA');
+                return;
+            }
+            document.getElementById('token').innerText = `Captcha Token: ${captchaResponse}`;
+        }
+    </script>
+</body>
+
+</html>

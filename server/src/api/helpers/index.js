@@ -1,4 +1,4 @@
-const Error = require('./error');
+const Error = require('./customError');
 const generateJwt = require('./generateJwt');
 const sendEmail = require('./sendEmail');
 

@@ -1,16 +1,25 @@
 const router = require('express-promise-router')();
 const { userController: uc } = require('../controllers');
 const { userValidatonRules: uvr } = require('../validations');
-const { validate, sessionAuth } = require('../middlewares');
+const {
+  validateRequest,
+  sessionAuth,
+  verifyCaptcha,
+} = require('../middlewares');
 
 // /api/users
 router
   .get('/verify', uc.verifyUser)
-  .post('/verify', uvr.requestVerification, validate, uc.requestVerification)
+  .post(
+    '/verify',
+    uvr.requestVerification,
+    validateRequest,
+    uc.requestVerification
+  )
   .get('/', sessionAuth, uc.getAllUsers)
   .get('/:username', uc.getUserByUsername)
-  .post('/', uvr.registerUser, validate, uc.registerUser)
-  .put('/:username', uvr.updateUser, validate, uc.updateUser)
-  .delete('/:username', uvr.deleteUser, validate, uc.deleteUser);
+  .post('/', uvr.registerUser, validateRequest, verifyCaptcha, uc.registerUser)
+  .put('/:username', uvr.updateUser, validateRequest, uc.updateUser)
+  .delete('/:username', uvr.deleteUser, validateRequest, uc.deleteUser);
 
 module.exports = router;

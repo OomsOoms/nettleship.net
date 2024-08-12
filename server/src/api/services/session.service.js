@@ -10,10 +10,6 @@ async function loginUser(loginIdentifier, password) {
   if (!user || !(await comparePasswords(password, user.password))) {
     throw Error.invalidCredentials();
   }
-
-  if (!user.active) {
-    throw Error.accountNotActive();
-  }
   return { user: user };
 }
 

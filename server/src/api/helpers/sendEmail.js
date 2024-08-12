@@ -17,13 +17,16 @@ module.exports = function (to, subject, text) {
     subject: subject,
     text: text,
   };
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Email sent: ', mailOptions);
+    return;
+  }
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      //console.error('Error sending email: ', error);
+      console.error('Error sending email: ', error);
     } else {
-      //console.log('Email sent: ', info.response);
+      console.log('Email sent: ', info.response);
       info.response;
     }
   });
-  //console.log(mailOptions);
 };
