@@ -35,8 +35,7 @@ const UserSchema = new mongoose.Schema(
       },
       profilePicture: {
         type: String,
-        default:
-          'https://i.pinimg.com/736x/c3/57/fa/c357face2de95f03e31c27cecec2ef63.jpg',
+        default: 'https://i.pinimg.com/736x/c3/57/fa/c357face2de95f03e31c27cecec2ef63.jpg',
       },
       roles: {
         type: [String],

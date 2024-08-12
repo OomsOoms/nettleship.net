@@ -17,9 +17,7 @@ class GameService {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let gameCode = '';
     for (let i = 0; i < 4; i++) {
-      gameCode += characters.charAt(
-        Math.floor(Math.random() * characters.length)
-      );
+      gameCode += characters.charAt(Math.floor(Math.random() * characters.length));
     }
 
     const newGame = new GameModel({

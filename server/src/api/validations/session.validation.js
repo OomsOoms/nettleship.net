@@ -10,14 +10,7 @@ const loginUser = [
     .escape()
     .isString()
     .bail(),
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required')
-    .bail()
-    .trim()
-    .escape()
-    .isString()
-    .bail(),
+  body('password').notEmpty().withMessage('Password is required').bail().trim().escape().isString().bail(),
   body().custom((value, { req }) => {
     if (req.body.username && req.body.email) {
       throw new Error('Both username and email cannot be provided');

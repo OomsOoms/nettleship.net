@@ -13,13 +13,7 @@ export default [
   },
   pluginJs.configs.recommended,
   {
-    ignores: [
-      '**/*.test.js',
-      '**/*.spec.js',
-      '**/*.setup.js',
-      'docs/**',
-      'coverage/**',
-    ],
+    ignores: ['**/*.test.js', '**/*.spec.js', '**/*.setup.js', 'docs/**', 'coverage/**'],
   },
   {
     files: ['**/*.js'],

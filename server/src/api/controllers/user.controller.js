@@ -58,9 +58,7 @@ async function registerUser(req, res) {
   // get the username, email, and password from the request body
   const { username, email, password } = req.body;
   await userService.registerUser(username, email, password);
-  res
-    .status(201)
-    .json({ message: 'User registered successfully, check your email' });
+  res.status(201).json({ message: 'User registered successfully, check your email' });
 }
 
 /**
@@ -72,13 +70,7 @@ async function updateUser(req, res) {
   const { id } = req.user;
   // get the password, newUsername, newEmail, and newPassword from the request body
   const { password, newUsername, newEmail, newPassword } = req.body;
-  const { user, token } = await userService.updateUser(
-    id,
-    password,
-    newUsername,
-    newEmail,
-    newPassword
-  );
+  const { user, token } = await userService.updateUser(id, password, newUsername, newEmail, newPassword);
   res.status(200).json({
     token: token,
     user: {

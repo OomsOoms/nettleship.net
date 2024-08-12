@@ -87,9 +87,7 @@ async function updateUser(id, password, newUsername, newEmail, newPassword) {
 
     // Check if any of the specified fields have changed and throw an error if not
     const fieldsToCheck = ['username', 'email', 'password'];
-    const hasChanged = fieldsToCheck.some(
-      (field) => newData[field] !== undefined && newData[field] !== user[field]
-    );
+    const hasChanged = fieldsToCheck.some((field) => newData[field] !== undefined && newData[field] !== user[field]);
 
     if (!hasChanged) {
       throw Error.invalidRequest('No changes detected');

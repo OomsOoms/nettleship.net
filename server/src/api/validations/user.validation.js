@@ -27,9 +27,7 @@ const registerUser = [
     .isLength({ max: 20 })
     .withMessage('Username must be at most 20 characters long')
     .matches(/^[a-z0-9_.-]+$/)
-    .withMessage(
-      'Username can only contain lowercase letters, numbers, underscores, hyphens, and full stops'
-    )
+    .withMessage('Username can only contain lowercase letters, numbers, underscores, hyphens, and full stops')
     .bail(),
   body('email')
     .notEmpty()
@@ -64,14 +62,7 @@ const registerUser = [
 ];
 
 const updateUser = [
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required')
-    .bail()
-    .trim()
-    .escape()
-    .isString()
-    .bail(),
+  body('password').notEmpty().withMessage('Password is required').bail().trim().escape().isString().bail(),
   body('newUsername')
     .optional()
     .bail()
@@ -112,14 +103,7 @@ const updateUser = [
 ];
 
 const deleteUser = [
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required')
-    .bail()
-    .trim()
-    .escape()
-    .isString()
-    .bail(),
+  body('password').notEmpty().withMessage('Password is required').bail().trim().escape().isString().bail(),
 ];
 
 module.exports = {

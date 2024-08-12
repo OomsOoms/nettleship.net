@@ -5,11 +5,7 @@ const express = require('express');
 const corsMiddleware = require('./config/corsOptions.js');
 const db = require('./config/db.js');
 const sessionConfig = require('./config/sessionConfig.js');
-const {
-  logger,
-  errorHandler,
-  rateLimiter,
-} = require('./api/middlewares/index.js');
+const { logger, errorHandler, rateLimiter } = require('./api/middlewares/index.js');
 
 const app = express();
 const PORT = process.env.PORT || 8000;

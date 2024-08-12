@@ -6,10 +6,7 @@ const fs = require('fs');
 const tags = fs.readFileSync(__dirname + '/tags.yml', 'utf8');
 const userPaths = fs.readFileSync(__dirname + '/userPaths.yml', 'utf8');
 const sessionPaths = fs.readFileSync(__dirname + '/sessionPaths.yml', 'utf8');
-const pathsComponents = fs.readFileSync(
-  __dirname + '/pathsComponents.yml',
-  'utf8'
-);
+const pathsComponents = fs.readFileSync(__dirname + '/pathsComponents.yml', 'utf8');
 
 const options = {
   definition: {
