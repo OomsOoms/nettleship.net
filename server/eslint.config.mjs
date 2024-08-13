@@ -17,6 +17,7 @@ export default [
   },
   {
     files: ['**/*.js'],
+
     rules: {
       'prettier/prettier': [
         'error',
@@ -38,6 +39,7 @@ export default [
           varsIgnorePattern: '^_',
         },
       ],
+      'no-console': 'error', // disallow console.log
     },
   },
   eslintConfigPrettier,

@@ -1,5 +1,7 @@
 const nodemailer = require('nodemailer');
 
+const { logger } = require('../../config/logger');
+
 module.exports = function (to, subject, text) {
   const transporter = nodemailer.createTransport({
     service: 'Gmail',
@@ -17,16 +19,17 @@ module.exports = function (to, subject, text) {
     subject: subject,
     text: text,
   };
+  // If in development mode, do not send email
   if (process.env.NODE_ENV === 'development') {
-    console.log('Email sent: ', mailOptions);
-    return;
+    logger.debug('Email sent: ', mailOptions);
+  } else {
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        logger.error('Error sending email: ', error);
+      } else {
+        logger.debug('Email sent: ', info.response);
+        info.response;
+      }
+    });
   }
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.error('Error sending email: ', error);
-    } else {
-      console.log('Email sent: ', info.response);
-      info.response;
-    }
-  });
 };

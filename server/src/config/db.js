@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
+const { logger } = require('../config/logger');
+
 async function connect() {
   let uri;
   if (process.env.NODE_ENV === 'test') {
@@ -12,7 +14,7 @@ async function connect() {
   return new Promise((resolve, reject) => {
     mongoose.connect(uri).then((res, err) => {
       if (err) return reject(err);
-      console.log(
+      logger.info(
         `Connected to MongoDB:${mongoose.connection.host}:${mongoose.connection.port} - ${mongoose.connection.name}`
       );
       resolve();

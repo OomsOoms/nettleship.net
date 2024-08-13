@@ -9,7 +9,7 @@ router
   .post('/verify', uvr.requestVerification, validateRequest, uc.requestVerification)
   .get('/', sessionAuth, uc.getAllUsers)
   .get('/:username', uc.getUserByUsername)
-  .post('/', uvr.registerUser, validateRequest, verifyCaptcha, uc.registerUser)
+  .post('/', uvr.registerUser, verifyCaptcha, validateRequest, uc.registerUser)
   .put('/:username', uvr.updateUser, validateRequest, uc.updateUser)
   .delete('/:username', uvr.deleteUser, validateRequest, uc.deleteUser);
 
