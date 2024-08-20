@@ -1,41 +1,31 @@
+const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
+const mongoose = require('mongoose');
+
 const { User } = require('../models');
 const { generateJwt, comparePasswords, sendEmail } = require('../helpers');
 const { Error } = require('../helpers');
-const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
-const fs = require('fs');
-const path = require('path');
 const { logger } = require('../../config/logger');
 
 // the user id will always correspond a user that exists since its just been authenticated
 
 async function verifyUser(token) {
   const decodedToken = jwt.decode(token);
-  if (!decodedToken || !decodedToken.id) {
-    throw Error.invalidRequest('Invalid token');
-  }
+  if (!decodedToken || !decodedToken.id) throw Error.invalidRequest('Invalid token');
+
   const user = await User.findById(decodedToken.id);
-  if (!user) {
-    throw Error.userNotFound('User not found');
-  }
-  if (!user.newEmail) {
-    throw Error.invalidRequest('Email already verified');
-  }
+  if (!user || !user.newEmail) throw Error.userNotFound('User not found or email already verified');
+
   user.email = user.newEmail;
   user.newEmail = '';
   await user.save();
 }
 
 async function requestVerification(email) {
-  const user = await User.findOne({
-    $or: [{ email }, { newEmail: email }],
-  });
-  if (!user) {
-    throw Error.userNotFound('User not found');
-  }
-  if (user.accountVerified) {
-    throw Error.invalidRequest('User already verified');
-  }
+  const user = await User.findOne({ newEmail: email });
+  if (!user || !user.newEmail) throw Error.userNotFound('User not found or email already verified');
+
   const token = generateJwt({ id: user._id }, { expiresIn: '24h' });
   const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
   sendEmail(email, 'Verify your email', verificationLink);
@@ -43,19 +33,17 @@ async function requestVerification(email) {
 
 async function getAllUsers(id) {
   const user = await User.findById(id);
-  if (!user.profile.roles.includes('admin')) {
-    throw Error.invalidCredentials('User is not an admin');
-  }
+  if (!user.profile.roles.includes('admin')) throw Error.invalidCredentials('User is not an admin');
+
   const users = await User.find();
   return users;
 }
 
-async function getUserByUsername(username) {
+async function getUserByUsername(id, username) {
   const user = await User.findOne({ username });
-  if (!user) {
-    throw Error.userNotFound(`User with username '${username}' not found`);
-  }
-  return user;
+  if (!user) throw Error.userNotFound(`User with username '${username}' not found`);
+
+  return id === user.id ? user : { username: user.username, profile: user.profile };
 }
 
 async function registerUser(username, newEmail, password) {
@@ -67,11 +55,8 @@ async function registerUser(username, newEmail, password) {
     sendEmail(newEmail, 'Verify your email', verificationLink);
   } catch (error) {
     if (error.code === 11000) {
-      if (error.keyPattern.email || error.keyPattern.newEmail) {
-        throw Error.mongoConflictError('Email already exists');
-      } else if (error.keyPattern.username) {
-        throw Error.mongoConflictError('Username already exists');
-      }
+      if (error.keyPattern.email || error.keyPattern.newEmail) throw Error.mongoConflictError('Email already exists');
+      else if (error.keyPattern.username) throw Error.mongoConflictError('Username already exists');
     }
     throw error;
   }
@@ -126,10 +111,8 @@ async function updateUser(id, username, currentPassword, updatedFields, file) {
         }
         user.password = value;
         changes.password = { message: 'Password changed, signed out of all sessions' };
-        // set all sessions to null to force a new login 'Cannot set headers after they are sent to the client' error if sessions are deleted
-        await mongoose.connection.db
-          .collection('sessions')
-          .updateMany({ 'session.userId': user.id }, { $set: { session: null } });
+        await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': id });
+
         continue;
       }
 
@@ -170,12 +153,10 @@ async function updateUser(id, username, currentPassword, updatedFields, file) {
 
 async function deleteUser(id, password) {
   const user = await User.findById(id);
-  if (!user) {
-    throw Error.userNotFound('User not found');
-  }
-  if (!(await comparePasswords(password, user.password))) {
-    throw Error.invalidCredentials('Invalid password');
-  }
+  if (!user) throw Error.userNotFound('User not found');
+  if (!(await comparePasswords(password, user.password))) throw Error.invalidCredentials('Invalid password');
+
+  await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': id });
   await User.deleteOne({ _id: id });
 }
 

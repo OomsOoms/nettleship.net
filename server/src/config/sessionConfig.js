@@ -4,7 +4,7 @@ const session = require('express-session');
 module.exports = session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.DATABASE_URI,
     collectionName: 'sessions',
