@@ -1,3 +1,9 @@
+# Ignore all files in the uploads/avatars directory
+public/uploads/avatars/*
+
+# Except for the default avatar file
+!public/uploads/avatars/default-avatar.jpg
+
 # Ignore all logs folders
 **/logs/
 

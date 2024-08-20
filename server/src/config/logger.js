@@ -20,7 +20,7 @@ function filterOnly(level) {
 }
 
 const logger = createLogger({
-  level: 'info',
+  level: 'debug',
   format: combine(timestamp(), logFormat),
   transports: [
     new transports.Console({ format: format.combine(format.colorize(), format.simple()) }),

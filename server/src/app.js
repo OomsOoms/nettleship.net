@@ -32,8 +32,11 @@ app.use(sessionConfig);
 // rate limiter middleware - limits the number of requests from an IP
 app.use(rateLimiter.generalLimiter);
 
+// Serve static files
+app.use(express.static('public'));
+
 // routes
-require('./api/routes/index.js')(app);
+require('./api/routes')(app);
 
 // error handling middleware
 app.all('*', (req, res) => {

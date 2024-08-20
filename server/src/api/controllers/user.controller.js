@@ -29,7 +29,7 @@ async function requestVerification(req, res) {
  */
 async function getAllUsers(req, res) {
   // Get the id from the verified token
-  const { id } = req.user;
+  const id = req.session.userId;
   const users = await userService.getAllUsers(id);
   res.status(200).json(users);
 }
@@ -67,18 +67,12 @@ async function registerUser(req, res) {
  */
 async function updateUser(req, res) {
   // get the id from the verified token
-  const { id } = req.user;
-  // get the password, newUsername, newEmail, and newPassword from the request body
-  const { password, newUsername, newEmail, newPassword } = req.body;
-  const { user, token } = await userService.updateUser(id, password, newUsername, newEmail, newPassword);
-  res.status(200).json({
-    token: token,
-    user: {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-    },
-  });
+  const id = req.session.userId;
+  const file = req.file;
+  const username = req.params.username;
+  const { currentPassword, ...updatedFields } = req.body;
+  const changes = await userService.updateUser(id, username, currentPassword, updatedFields, file);
+  res.status(200).json(changes);
 }
 
 /**

@@ -3,6 +3,10 @@ const { userController: uc } = require('../controllers');
 const { userValidatonRules: uvr } = require('../validations');
 const { validateRequest, sessionAuth, verifyCaptcha } = require('../middlewares');
 
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage, limits: { fileSize: 1024 * 1024 * 5 } });
+
 // /api/users
 router
   .get('/verify', uc.verifyUser)
@@ -10,7 +14,7 @@ router
   .get('/', sessionAuth, uc.getAllUsers)
   .get('/:username', uc.getUserByUsername)
   .post('/', uvr.registerUser, verifyCaptcha, validateRequest, uc.registerUser)
-  .put('/:username', uvr.updateUser, validateRequest, uc.updateUser)
+  .patch('/:username', uvr.updateUser, validateRequest, upload.single('avatar'), uc.updateUser)
   .delete('/:username', uvr.deleteUser, validateRequest, uc.deleteUser);
 
 module.exports = router;

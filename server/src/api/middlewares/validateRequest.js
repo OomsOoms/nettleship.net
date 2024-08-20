@@ -1,5 +1,3 @@
-const { Error } = require('../helpers');
-
 const { validationResult } = require('express-validator');
 
 const validateRequest = (req, res, next) => {
@@ -7,7 +5,7 @@ const validateRequest = (req, res, next) => {
   if (!errors.isEmpty()) {
     const error = process.env.NODE_ENV === 'production' ? 'Invalid request parameters' : errors.array();
 
-    throw Error.invalidRequest(error);
+    res.status(400).json({ message: error });
   }
   next();
 };

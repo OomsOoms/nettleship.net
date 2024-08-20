@@ -61,46 +61,7 @@ const registerUser = [
     .bail(),
 ];
 
-const updateUser = [
-  body('password').notEmpty().withMessage('Password is required').bail().trim().escape().isString().bail(),
-  body('newUsername')
-    .optional()
-    .bail()
-    .trim()
-    .escape()
-    .not()
-    .isEmpty()
-    .withMessage('Username is required')
-    .bail()
-    .isLength({ min: 3 })
-    .withMessage('Username must be at least 3 characters long')
-    .bail(),
-  body('newEmail')
-    .optional()
-    .bail()
-    .notEmpty()
-    .withMessage('Email is required')
-    .bail()
-    .trim()
-    .escape()
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Invalid email')
-    .bail(),
-  body('newPassword')
-    .optional()
-    .bail()
-    .notEmpty()
-    .withMessage('Password is required')
-    .bail()
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least  8 characters long')
-    .bail()
-    .trim()
-    .escape()
-    .isString()
-    .bail(),
-];
+const updateUser = []; // TODO: Add validation rules for updating user, may also redo other validation rules
 
 const deleteUser = [
   body('password').notEmpty().withMessage('Password is required').bail().trim().escape().isString().bail(),

@@ -2,6 +2,12 @@ const { User } = require('../models');
 const { generateJwt, comparePasswords, sendEmail } = require('../helpers');
 const { Error } = require('../helpers');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
+const { logger } = require('../../config/logger');
+
+// the user id will always correspond a user that exists since its just been authenticated
 
 async function verifyUser(token) {
   const decodedToken = jwt.decode(token);
@@ -12,16 +18,17 @@ async function verifyUser(token) {
   if (!user) {
     throw Error.userNotFound('User not found');
   }
-  if (!user.unverifiedEmail) {
+  if (!user.newEmail) {
     throw Error.invalidRequest('Email already verified');
   }
-  user.unverifiedEmail = '';
+  user.email = user.newEmail;
+  user.newEmail = '';
   await user.save();
 }
 
-async function requestVerification(unverifiedEmail) {
+async function requestVerification(email) {
   const user = await User.findOne({
-    $or: [{ unverifiedEmail }, { email: unverifiedEmail }],
+    $or: [{ email }, { newEmail: email }],
   });
   if (!user) {
     throw Error.userNotFound('User not found');
@@ -31,12 +38,12 @@ async function requestVerification(unverifiedEmail) {
   }
   const token = generateJwt({ id: user._id }, { expiresIn: '24h' });
   const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
-  sendEmail(unverifiedEmail, 'Verify your email', verificationLink);
+  sendEmail(email, 'Verify your email', verificationLink);
 }
 
 async function getAllUsers(id) {
   const user = await User.findById(id);
-  if (!user.roles.includes('admin')) {
+  if (!user.profile.roles.includes('admin')) {
     throw Error.invalidCredentials('User is not an admin');
   }
   const users = await User.find();
@@ -51,16 +58,16 @@ async function getUserByUsername(username) {
   return user;
 }
 
-async function registerUser(username, unverifiedEmail, password) {
+async function registerUser(username, newEmail, password) {
   try {
-    const user = new User({ username, unverifiedEmail, password });
+    const user = new User({ username, newEmail, password });
     await user.save();
     const token = generateJwt({ id: user._id }, { expiresIn: '24h' });
     const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
-    sendEmail(unverifiedEmail, 'Verify your email', verificationLink);
+    sendEmail(newEmail, 'Verify your email', verificationLink);
   } catch (error) {
     if (error.code === 11000) {
-      if (error.keyPattern.email || error.keyPattern.unverifiedEmail) {
+      if (error.keyPattern.email || error.keyPattern.newEmail) {
         throw Error.mongoConflictError('Email already exists');
       } else if (error.keyPattern.username) {
         throw Error.mongoConflictError('Username already exists');
@@ -70,42 +77,95 @@ async function registerUser(username, unverifiedEmail, password) {
   }
 }
 
-async function updateUser(id, password, newUsername, newEmail, newPassword) {
+async function updateUser(id, username, currentPassword, updatedFields, file) {
+  // find the user that wants to be updated
+  const user = await User.findOne({ username });
+  if (!user) throw Error.userNotFound(`User '${username}' not found`);
+
+  // check if the requesting user is the same as the target user
+  if (id !== user.id) throw Error.invalidCredentials('Not authorized to update this user');
+
+  const allowedFields = ['username', 'newEmail', 'password'];
+  const allowedEmbeddedFields = ['profile.displayName', 'profile.bio', 'settings.language'];
+  const changes = {};
+
+  if (file) {
+    // Delete the old profile picture if it exists
+    const oldFile = user.profile.profilePicture.split('/').pop();
+    if (oldFile !== 'default-avatar.jpg') {
+      try {
+        fs.unlinkSync(`./public/uploads/avatars/${oldFile}`);
+      } catch (error) {
+        logger.error(`Error deleting old profile picture: ${error.message}`);
+      }
+    }
+
+    // Write the new file to the directory
+    const fileName = `${user.id}-${Date.now()}.jpg`;
+    const profilePicturePath = path.resolve('./public/uploads/avatars', fileName);
+    fs.writeFileSync(profilePicturePath, file.buffer); // buffer is automatically removed after the function ends
+
+    const profilePictureUrl = `${process.env.DOMAIN}/uploads/avatars/${fileName}`;
+    user.profile.profilePicture = profilePictureUrl;
+    changes.profilePicture = { message: 'Profile picture updated' };
+  }
+
   try {
-    const user = await User.findById(id);
+    for (const [key, value] of Object.entries(updatedFields)) {
+      if (!allowedFields.includes(key) && !allowedEmbeddedFields.includes(key)) {
+        throw Error.invalidRequest(`Invalid field: ${key}`);
+      }
 
-    if (!user || !(await comparePasswords(password, user.password))) {
-      throw Error.invalidCredentials();
+      // handle password change
+      if (key === 'password') {
+        if (!currentPassword) {
+          throw Error.invalidRequest('Current password is required if changing password');
+        }
+        if (!(await comparePasswords(currentPassword, user.password))) {
+          throw Error.invalidCredentials('Invalid current password');
+        }
+        user.password = value;
+        changes.password = { message: 'Password changed, signed out of all sessions' };
+        // set all sessions to null to force a new login 'Cannot set headers after they are sent to the client' error if sessions are deleted
+        await mongoose.connection.db
+          .collection('sessions')
+          .updateMany({ 'session.userId': user.id }, { $set: { session: null } });
+        continue;
+      }
+
+      // handle embedded fields
+      if (allowedEmbeddedFields.includes(key)) {
+        const [embeddedField, subField] = key.split('.');
+        if (user[embeddedField][subField] !== value) {
+          changes[key] = { message: `${subField} changed to ${value}` };
+          user[embeddedField][subField] = value;
+        }
+      } else if (user[key] !== value) {
+        // handle top-level fields
+        changes[key] = { message: `${key} changed to ${value}` };
+        user[key] = value;
+      }
     }
 
-    // Prepare the new data for the user
-    const newData = {
-      username: newUsername || user.username,
-      email: newEmail || user.email,
-      password: newPassword || user.password,
-    };
-
-    // Check if any of the specified fields have changed and throw an error if not
-    const fieldsToCheck = ['username', 'email', 'password'];
-    const hasChanged = fieldsToCheck.some((field) => newData[field] !== undefined && newData[field] !== user[field]);
-
-    if (!hasChanged) {
-      throw Error.invalidRequest('No changes detected');
+    await user.save();
+    // Handle email change after user is saved to avoid duplicate key error
+    if (changes.newEmail) {
+      const token = generateJwt({ id: user._id }, { expiresIn: '24h' });
+      const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
+      sendEmail(changes.newEmail, 'Verify your email', verificationLink);
+      changes.newEmail.message = 'Email change requested, verify email';
     }
-
-    // Update the user with the new data
-    Object.assign(user, newData);
-    const updatedUser = await user.save();
-
-    const token = generateJwt({ id: updatedUser._id });
-    return { user: updatedUser, token: token };
   } catch (error) {
-    // If there's a conflict with the new email, throw a specific error
     if (error.code === 11000) {
-      throw Error.mongoConflictError('Email already exists');
+      if (error.keyPattern.email || error.keyPattern.newEmail) {
+        throw Error.mongoConflictError('Email already exists');
+      } else if (error.keyPattern.username) {
+        throw Error.mongoConflictError('Username already exists');
+      }
     }
     throw error;
   }
+  return { changes };
 }
 
 async function deleteUser(id, password) {

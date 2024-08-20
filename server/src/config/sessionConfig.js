@@ -4,15 +4,16 @@ const session = require('express-session');
 module.exports = session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   store: MongoStore.create({
-    mongoUrl: process.env.DATABASE_URI, // This is still using the development database, should use a memory one but idc rn
+    mongoUrl: process.env.DATABASE_URI,
     collectionName: 'sessions',
-    ttl: 14 * 24 * 60 * 60, // 14 days
-    autoRemove: 'native', // Let MongoDB handle the removal of expired sessions
+    ttl: 14 * 24 * 60 * 60,
+    autoRemove: 'native',
+    stringify: false, // Set stringify option to false to store cookies as objects
   }),
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+    maxAge: 1000 * 60 * 60 * 24 * 7,
     secure: false,
   },
 });

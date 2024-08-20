@@ -13,7 +13,7 @@ const UserSchema = new mongoose.Schema(
       unique: true,
       default: null,
     },
-    unverifiedEmail: {
+    newEmail: {
       type: String,
       unique: true,
       required: function () {
@@ -35,7 +35,7 @@ const UserSchema = new mongoose.Schema(
       },
       profilePicture: {
         type: String,
-        default: 'https://i.pinimg.com/736x/c3/57/fa/c357face2de95f03e31c27cecec2ef63.jpg',
+        default: 'http://localhost:8000/uploads/avatars/default-avatar.jpg',
       },
       roles: {
         type: [String],
@@ -60,8 +60,6 @@ const UserSchema = new mongoose.Schema(
   { collection: 'Users' }
 );
 
-// run when a document is created with await User.create()
-
 // run when a document is saved with await user.save()ho
 UserSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
@@ -70,7 +68,7 @@ UserSchema.pre('save', async function (next) {
   }
   if (this.isNew) {
     this.profile.displayName = this.username;
-    this.email = this.unverifiedEmail;
+    this.email = this.newEmail;
   }
   next();
 });
