@@ -6,8 +6,9 @@ const validateRequest = (req, res, next) => {
     const error = process.env.NODE_ENV === 'production' ? 'Invalid request parameters' : errors.array();
 
     res.status(400).json({ message: error });
+  } else {
+    next();
   }
-  next();
 };
 
 module.exports = validateRequest;
