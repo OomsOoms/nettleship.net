@@ -27,8 +27,7 @@ async function requestVerification(email) {
   if (!user || !user.newEmail) throw Error.userNotFound('User not found or email already verified');
 
   const token = generateJwt({ id: user._id }, { expiresIn: '24h' });
-  const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
-  sendEmail(email, 'Verify your email', verificationLink);
+  sendEmail(email, 'Verify your email', 'verifyEmail', { username: user.username, token });
 }
 
 async function getAllUsers(id) {
@@ -51,8 +50,7 @@ async function registerUser(username, newEmail, password) {
     const user = new User({ username, newEmail, password });
     await user.save();
     const token = generateJwt({ id: user._id }, { expiresIn: '24h' });
-    const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
-    sendEmail(newEmail, 'Verify your email', verificationLink);
+    sendEmail(newEmail, 'Verify your email', 'verifyEmail', { username, token });
   } catch (error) {
     if (error.code === 11000) {
       if (error.keyPattern.email || error.keyPattern.newEmail) throw Error.mongoConflictError('Email already exists');
@@ -134,8 +132,7 @@ async function updateUser(id, username, currentPassword, updatedFields, file) {
     // Handle email change after user is saved to avoid duplicate key error
     if (changes.newEmail) {
       const token = generateJwt({ id: user._id }, { expiresIn: '24h' });
-      const verificationLink = `${process.env.DOMAIN}/api/users/verify?token=${token}`;
-      sendEmail(changes.newEmail, 'Verify your email', verificationLink);
+      sendEmail(changes.newEmail, 'Verify your email', 'verifyEmail', { username, token });
       changes.newEmail.message = 'Email change requested, verify email';
     }
   } catch (error) {

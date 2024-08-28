@@ -1,35 +1,45 @@
 const nodemailer = require('nodemailer');
+const handlebars = require('handlebars');
+const fs = require('fs');
+const path = require('path');
 
 const { logger } = require('../../config/logger');
 
-module.exports = function (to, subject, text) {
-  const transporter = nodemailer.createTransport({
-    service: 'Gmail',
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-  const mailOptions = {
-    from: process.env.FROM_ADDRESS, // If not set, it will be sent from the default email of the gmail account
-    to: to,
-    subject: subject,
-    text: text,
-  };
-  // If in development mode, do not send email
-  if (process.env.NODE_ENV === 'development') {
-    logger.debug('Email sent: ', mailOptions);
-  } else {
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        logger.error('Error sending email: ', error);
-      } else {
-        logger.debug('Email sent: ', info.response);
-        info.response;
-      }
-    });
-  }
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+const COMMON_DATA = {
+  frontendDomain: process.env.FRONTEND_DOMAIN,
+  backendDomain: process.env.BACKEND_DOMAIN,
 };
+
+async function sendEmail(to, subject, templateName, templateData) {
+  try {
+    const templatePath = path.join(__dirname, '../../views', `${templateName}.hbs`);
+
+    const source = fs.readFileSync(templatePath, 'utf8');
+    const template = handlebars.compile(source);
+    const html = template({ ...COMMON_DATA, ...templateData });
+
+    const mailOptions = {
+      from: process.env.FROM_ADDRESS,
+      to,
+      subject: subject,
+      html,
+    };
+
+    await transporter.sendMail(mailOptions);
+    logger.debug(
+      `Email sent to ${to}, with the subject ${subject} and template ${templateName} and the data ${JSON.stringify(templateData)}`
+    );
+  } catch (error) {
+    logger.error(error);
+  }
+}
+
+module.exports = sendEmail;

@@ -1,0 +1,2 @@
+While something like a content delivery network (CDN) might be used, I will just use the public folder, so any frontend assets, possibly including the css and js files will be stored within this folder.
+I may change this in the future but for now the assets will be stored in this folder, this might all be very wrong im not sure but it seems to make sense to me, the public folder could be replaced by an external CDN

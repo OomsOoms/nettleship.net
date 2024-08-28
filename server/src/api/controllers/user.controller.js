@@ -8,7 +8,7 @@ const { userService } = require('../services');
  * @method GET
  */
 async function verifyUser(req, res) {
-  const token = req.query.token;
+  const token = req.headers.authorization.split(' ')[1];
   await userService.verifyUser(token);
   res.status(200).json({ message: 'Email verified' });
 }

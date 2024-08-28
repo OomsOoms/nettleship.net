@@ -9,7 +9,7 @@ const upload = multer({ storage: storage, limits: { fileSize: 1024 * 1024 * 5 } 
 
 // /api/users
 router
-  .get('/verify', uc.verifyUser)
+  .patch('/verify', uc.verifyUser)
   .post('/verify', uvr.requestVerification, validateRequest, uc.requestVerification)
   .get('/', sessionAuth, uc.getAllUsers)
   .get('/:username', uc.getUserByUsername)
