@@ -1,10 +1,8 @@
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const path = require('path');
 const mongoose = require('mongoose');
 
 const { User } = require('../models');
-const { generateJwt, comparePasswords, sendEmail } = require('../helpers');
+const { generateJwt, comparePasswords, sendEmail, uploadFile, deleteFile } = require('../helpers');
 const { Error } = require('../helpers');
 const { logger } = require('../../config/logger');
 
@@ -71,24 +69,26 @@ async function updateUser(id, username, currentPassword, updatedFields, file) {
   const allowedFields = ['username', 'newEmail', 'password'];
   const allowedEmbeddedFields = ['profile.displayName', 'profile.bio', 'settings.language'];
   const changes = {};
-
+  logger.debug(`Updating user: ${username}`);
   if (file) {
     // Delete the old profile picture if it exists
     const oldFile = user.profile.profilePicture.split('/').pop();
     if (oldFile !== 'default-avatar.jpg') {
       try {
-        fs.unlinkSync(`./public/uploads/avatars/${oldFile}`);
+        await deleteFile(`uploads/avatars/${oldFile}`);
+        logger.debug(`Deleted old profile picture: ${oldFile}`);
       } catch (error) {
         logger.error(`Error deleting old profile picture: ${error.message}`);
       }
     }
 
-    // Write the new file to the directory
-    const fileName = `${user.id}-${Date.now()}.jpg`;
-    const profilePicturePath = path.resolve('./public/uploads/avatars', fileName);
-    fs.writeFileSync(profilePicturePath, file.buffer); // buffer is automatically removed after the function ends
+    // Upload the file to S3
+    const fileName = `uploads/avatars/${user.id}-${Date.now()}.jpg`;
+    const result = await uploadFile(file, fileName);
+    logger.debug(`Uploaded profile picture to S3: ${result.key}`);
 
-    const profilePictureUrl = `${process.env.DOMAIN}/uploads/avatars/${fileName}`;
+    // Update the user's profile picture
+    const profilePictureUrl = `${process.env.CDN_DOMAIN}/${result.key}`;
     user.profile.profilePicture = profilePictureUrl;
     changes.profilePicture = { message: 'Profile picture updated' };
   }

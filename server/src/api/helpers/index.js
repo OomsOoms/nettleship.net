@@ -4,6 +4,7 @@ const sendEmail = require('./sendEmail');
 
 module.exports = {
   ...require('./passwordUtils'),
+  ...require('./s3'),
   generateJwt,
   Error,
   sendEmail,

@@ -16,6 +16,7 @@ const transporter = nodemailer.createTransport({
 const COMMON_DATA = {
   frontendDomain: process.env.FRONTEND_DOMAIN,
   backendDomain: process.env.BACKEND_DOMAIN,
+  cdnDomain: process.env.CDN_DOMAIN,
 };
 
 async function sendEmail(to, subject, templateName, templateData) {
