@@ -7,6 +7,7 @@ async function hashPassword(password) {
 }
 
 async function comparePasswords(plainPassword, hashedPassword) {
+  if (!plainPassword || !hashedPassword) return false;
   const match = await bcryptjs.compare(plainPassword, hashedPassword);
   return match;
 }
