@@ -22,7 +22,7 @@ async function verifyUser(token) {
   if (!user || !user.newEmail) throw Error.userNotFound('User not found or email already verified');
 
   user.email = user.newEmail;
-  user.newEmail = '';
+  user.newEmail = null;
   await user.save();
 }
 
@@ -84,15 +84,15 @@ async function registerUser(username, email, password) {
     sendEmail(email, 'Verify your email', 'verifyEmail', { username, token });
   } catch (error) {
     if (error.code === 11000) {
-      if (error.keyPattern.email || error.keyPattern.newEmail) throw Error.mongoConflictError('Email already exists');
-      else if (error.keyPattern.username) throw Error.mongoConflictError('Username already exists');
+      const conflicField = error.keyPattern.email || error.keyPattern.newEmail ? 'Email' : 'Username';
+      throw Error.mongoConflictError(`${conflicField} already exists`);
     }
     throw error;
   }
 }
 
 /**
- *
+ * Updates a user's information based on the fields provided
  * @param {string} id - The requesting user id from the session
  * @param {string} username - The username of the user to get
  * @param {string} currentPassword - The current password of the user
@@ -140,12 +140,8 @@ async function updateUser(id, username, currentPassword, updatedFields, file) {
     }
   } catch (error) {
     if (error.code === 11000) {
-      // TODO: doesnt check if its thesame as an existing email only newEmail, will change later
-      if (error.keyPattern.email || error.keyPattern.newEmail) {
-        throw Error.mongoConflictError('Email already exists');
-      } else if (error.keyPattern.username) {
-        throw Error.mongoConflictError('Username already exists');
-      }
+      const conflicField = error.keyPattern.email || error.keyPattern.newEmail ? 'Email' : 'Username';
+      throw Error.mongoConflictError(`${conflicField} already exists`);
     }
     throw error;
   }
