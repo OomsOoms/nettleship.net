@@ -10,14 +10,11 @@ const { logger } = require('../../config/logger');
 
 /**
  * Verifies a user's email
- * @param {string} token - The JWT token to verify the user's email
+ * @param {string} id - The user id from the token
  * @throws {Error} - If the token is invalid or the user is not found
  */
-async function verifyUser(token) {
-  const decodedToken = jwt.decode(token);
-  if (!decodedToken || !decodedToken.id) throw Error.invalidRequest('Invalid token');
-
-  const user = await User.findById(decodedToken.id);
+async function verifyUser(id) {
+  const user = await User.findById(id);
   // The newEmail is only set when the user has an email that needs to be verified
   if (!user || !user.newEmail) throw Error.userNotFound('User not found or email already verified');
 
@@ -108,8 +105,8 @@ async function updateUser(id, username, currentPassword, updatedFields, file) {
   const user = await User.findOne({ username });
   if (!user) throw Error.userNotFound(`User '${username}' not found`);
   if (id !== user.id) throw Error.invalidCredentials('Not authorized to update this user');
-
-  const allowedFields = ['username', 'email', 'password', 'profile.displayName', 'profile.bio', 'settings.language'];
+  // Also found in validations
+  const allowedFields = ['username', 'email', 'password', 'profile.displayName', 'profile.bio'];
   const changes = {};
 
   if (file) {

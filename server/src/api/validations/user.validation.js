@@ -1,74 +1,91 @@
-const { body } = require('express-validator');
+const { body, check } = require('express-validator');
+const jwt = require('jsonwebtoken');
+
+const { validateRequest, verifyCaptcha, sessionAuth } = require('../middlewares');
+
+const verifyUser = [
+  check('token').notEmpty().trim().escape().withMessage('Token is required'),
+  async (req, res, next) => {
+    const token = req.headers.authorization.split(' ')[1];
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      req.user = decoded;
+      next();
+    } catch {
+      res.status(400).json({ message: 'Invalid Token' });
+    }
+  },
+];
 
 const requestVerification = [
-  body('email')
-    .notEmpty()
-    .withMessage('Email is required')
-    .bail()
-    .trim()
-    .escape()
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Invalid email')
-    .bail(),
+  body('email').isEmail().normalizeEmail().trim().escape().withMessage('Invalid Email'),
+  validateRequest,
 ];
+
+const getAllUsers = [sessionAuth];
 
 const registerUser = [
   body('username')
     .trim()
     .escape()
-    .not()
-    .isEmpty()
-    .withMessage('Username is required')
-    .bail()
-    .isLength({ min: 3 })
-    .withMessage('Username must be at least 3 characters long')
-    .bail()
-    .isLength({ max: 20 })
-    .withMessage('Username must be at most 20 characters long')
+    .isLength({ min: 3, max: 20 })
+    .withMessage('Username must be between 3 and 20 characters long')
     .matches(/^[a-z0-9_.-]+$/)
-    .withMessage('Username can only contain lowercase letters, numbers, underscores, hyphens, and full stops')
-    .bail(),
-  body('email')
-    .notEmpty()
-    .withMessage('Email is required')
-    .bail()
-    .trim()
-    .escape()
-    .isLength({ min: 6 })
-    .withMessage('Email must be at least 6 characters long')
-    .bail()
-    .isLength({ max: 71 })
-    .withMessage('Email must be at most 71 characters long')
-    .bail()
-    .isEmail() // this also checks the length so the values I picked were based off of this, just so i can get better error messages
-    .normalizeEmail()
-    .withMessage('Invalid email')
-    .bail(),
+    .withMessage('Username can only contain lowercase letters, numbers, underscores, hyphens, and full stops'),
+  body('email').trim().escape().isEmail().normalizeEmail().withMessage('Invalid Email'),
   body('password')
     .trim()
     .escape()
-    .isString()
-    .bail()
-    .notEmpty()
-    .withMessage('Password is required')
-    .bail()
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters long')
-    .bail()
     .isLength({ max: 128 })
-    .withMessage('Password must be at most 128 characters long')
-    .bail(),
+    .withMessage('Password must be less than 128 characters long')
+    .matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+  validateRequest,
+  verifyCaptcha,
 ];
 
-const updateUser = []; // TODO: Add validation rules for updating user, may also redo other validation rules
-
-const deleteUser = [
-  body('password').notEmpty().withMessage('Password is required').bail().trim().escape().isString().bail(),
+const updateUser = [
+  body('username')
+    .optional()
+    .trim()
+    .escape()
+    .isLength({ min: 3, max: 20 })
+    .withMessage('Username must be between 3 and 20 characters long')
+    .matches(/^[a-z0-9_.-]+$/)
+    .withMessage('Username can only contain lowercase letters, numbers, underscores, hyphens, and full stops'),
+  body('email').optional().trim().escape().isEmail().normalizeEmail().withMessage('Invalid Email'),
+  body('password')
+    .optional()
+    .trim()
+    .escape()
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long')
+    .isLength({ max: 128 })
+    .withMessage('Password must be less than 128 characters long')
+    .matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+  body('currentPassword')
+    .custom(async (value, { req }) => {
+      const password = req.body.password;
+      if (password && !value) {
+        throw new Error('Current password is required');
+      }
+      return true;
+    })
+    .trim()
+    .escape()
+    .withMessage('Current password is required'),
+  validateRequest,
 ];
+
+const deleteUser = [body('password').notEmpty().trim().escape().withMessage('Password is required'), validateRequest];
 
 module.exports = {
+  verifyUser,
   registerUser,
+  getAllUsers,
   updateUser,
   deleteUser,
   requestVerification,
