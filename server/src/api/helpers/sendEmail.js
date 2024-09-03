@@ -33,7 +33,13 @@ async function sendEmail(to, subject, templateName, templateData) {
       subject: subject,
       html,
     };
-
+    if (process.env.NODE_ENV === 'test') return;
+    if (process.env.NODE_ENV === 'development') {
+      logger.debug(
+        `Email to ${to}, with the subject ${subject} and template ${templateName} and the data ${JSON.stringify(templateData)}`
+      );
+      return;
+    }
     await transporter.sendMail(mailOptions);
     logger.debug(
       `Email sent to ${to}, with the subject ${subject} and template ${templateName} and the data ${JSON.stringify(templateData)}`

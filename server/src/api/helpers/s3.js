@@ -1,4 +1,6 @@
 const S3 = require('aws-sdk/clients/s3');
+const fs = require('fs');
+const path = require('path');
 
 const bucketName = process.env.AWS_BUCKET_NAME;
 const region = process.env.AWS_REGION;
@@ -12,6 +14,17 @@ const s3 = new S3({
 });
 
 function uploadFile(file, filename) {
+  if (!file) return Promise.resolve();
+
+  if (process.env.NODE_ENV === 'test') return Promise.resolve({ key: filename });
+
+  if (process.env.NODE_ENV === 'development') {
+    const filePath = path.join(__dirname, '../../../public', filename);
+    const fileStream = fs.createWriteStream(filePath);
+    fileStream.write(file.buffer);
+    fileStream.end();
+    return Promise.resolve({ key: filename });
+  }
   const fileStream = file.buffer;
   const uploadParams = {
     Bucket: bucketName,
@@ -24,6 +37,15 @@ function uploadFile(file, filename) {
 }
 
 function deleteFile(filename) {
+  if (process.env.NODE_ENV === 'test') return Promise.resolve();
+
+  if (process.env.NODE_ENV === 'development') {
+    const filePath = path.join(__dirname, '../../../public', filename);
+    fs.unlink(filePath, (err) => {
+      if (err) throw err;
+    });
+    return Promise.resolve();
+  }
   const deleteParams = {
     Bucket: bucketName,
     Key: filename,
