@@ -121,28 +121,29 @@ async function updateUser(id, username, currentPassword, updatedFields, file) {
   }
 
   for (const [path, value] of Object.entries(updatedFields)) {
-    if (allowedFields.includes(path)) {
-      if (path === 'password') {
-        if (!(await comparePasswords(currentPassword, user.password)))
+    if (!allowedFields.includes(path) || user.get(path) === value || !value) continue;
+
+    switch (path) {
+      case 'password':
+        if (!(await comparePasswords(currentPassword, user.password))) {
           throw Error.invalidCredentials('Invalid password');
+        }
         user.password = value;
         changes.password = { message: 'Password changed, signed out of all sessions' };
         await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': id });
-        continue;
-      } else if (path === 'email' && user.email !== value) {
+        break;
+      case 'email':
         user.newEmail = value;
-        changes[path] = { message: 'Email change requested, verify email', value };
-        continue;
-      } else if (user[path] !== value) {
-        user[path] = value;
+        changes.email = { message: 'Email change requested, verify email', value };
+        break;
+      default:
+        user.set(path, value);
         changes[path] = { message: 'Field updated', value };
-      }
     }
   }
-
   try {
     await user.save();
-    if (changes) {
+    if (changes.email) {
       const token = generateJwt({ id: user._id }, { expiresIn: '24h' });
       sendEmail(changes.email.value, 'Verify your email', 'verifyEmail', { username: user.username, token });
     }
