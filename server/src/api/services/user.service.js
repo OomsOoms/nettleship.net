@@ -21,6 +21,10 @@ async function verifyUser(token) {
   // The newEmail is only set when the user has an email that needs to be verified
   if (!user || !user.newEmail) throw Error.userNotFound('User not found or email already verified');
 
+  if (user.email) {
+    sendEmail(user.email, 'Email changed', 'emailChanged', { username: user.username, email: user.newEmail });
+  }
+
   user.email = user.newEmail;
   user.newEmail = null;
   await user.save();
@@ -105,7 +109,7 @@ async function updateUser(id, username, currentPassword, updatedFields, file) {
   if (!user) throw Error.userNotFound(`User '${username}' not found`);
   if (id !== user.id) throw Error.invalidCredentials('Not authorized to update this user');
 
-  const allowedFields = ['username', 'newEmail', 'password', 'profile.displayName', 'profile.bio', 'settings.language'];
+  const allowedFields = ['username', 'email', 'password', 'profile.displayName', 'profile.bio', 'settings.language'];
   const changes = {};
 
   if (file) {
@@ -124,6 +128,11 @@ async function updateUser(id, username, currentPassword, updatedFields, file) {
         user.password = value;
         changes.password = { message: 'Password changed, signed out of all sessions' };
         await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': id });
+        continue;
+      } else if (path === 'email' && user.email !== value) {
+        user.newEmail = value;
+        changes[path] = { message: 'Email change requested, verify email', value };
+        continue;
       } else if (user[path] !== value) {
         user[path] = value;
         changes[path] = { message: 'Field updated', value };
@@ -133,10 +142,9 @@ async function updateUser(id, username, currentPassword, updatedFields, file) {
 
   try {
     await user.save();
-    if (changes.newEmail) {
+    if (changes) {
       const token = generateJwt({ id: user._id }, { expiresIn: '24h' });
-      sendEmail(changes.newEmail.value, 'Verify your email', 'verifyEmail', { username, token });
-      changes.newEmail.message = 'Email change requested, verify email';
+      sendEmail(changes.email.value, 'Verify your email', 'verifyEmail', { username: user.username, token });
     }
   } catch (error) {
     if (error.code === 11000) {
