@@ -42,7 +42,7 @@ function deleteFile(filename) {
   if (process.env.NODE_ENV === 'development') {
     const filePath = path.join(__dirname, '../../../public', filename);
     fs.unlink(filePath, (err) => {
-      if (err) throw err;
+      if (err) return;
     });
     return Promise.resolve();
   }

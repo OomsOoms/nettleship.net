@@ -1,12 +1,8 @@
-const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
 const { User } = require('../models');
 const { generateJwt, comparePasswords, sendEmail, uploadFile, deleteFile } = require('../helpers');
 const { Error } = require('../helpers');
-const { logger } = require('../../config/logger');
-
-// the user id will always correspond a user that exists since its just been authenticated
 
 /**
  * Verifies a user's email
@@ -41,15 +37,10 @@ async function requestVerification(email) {
 }
 
 /**
- * Gets all users if the requesting user is an admin
- * @param {string} id - The requesting user id from the session
+ * Gets all users if the requesting user is an admin, which is checked in the middleware
  * @returns {Promise<User[]>} - A list of all users
- * @throws {Error} - If the user is not an admin
  */
-async function getAllUsers(id) {
-  const user = await User.findById(id);
-  if (!user.profile.roles.includes('admin')) throw Error.invalidCredentials('User is not an admin');
-
+async function getAllUsers() {
   const users = await User.find();
   return users;
 }
@@ -93,7 +84,7 @@ async function registerUser(username, email, password) {
 }
 
 /**
- * Updates a user's information based on the fields provided
+ * Updates a user's information based on the fields provided, admins can update any user without a password
  * @param {string} id - The requesting user id from the session
  * @param {string} username - The username of the user to get
  * @param {string} currentPassword - The current password of the user
@@ -101,13 +92,23 @@ async function registerUser(username, email, password) {
  * @param {Object} file - The file to upload
  * @returns {Promise<Object>} - The changes made to the user
  */
-async function updateUser(id, username, currentPassword, updatedFields, file) {
+async function updateUser(requestingUser, username, currentPassword, updatedFields, file) {
+  // Find the user to update
   const user = await User.findOne({ username });
   if (!user) throw Error.userNotFound(`User '${username}' not found`);
-  if (id !== user.id) throw Error.invalidCredentials('Not authorized to update this user');
-  // Also found in validations
-  const allowedFields = ['username', 'email', 'password', 'profile.displayName', 'profile.bio'];
-  const changes = {};
+
+  // Check if the requesting user is an admin or the same user
+  const isAdmin = requestingUser.profile.roles.includes('admin');
+  const isSameUser = requestingUser.id === user.id;
+
+  // Check if the user is authorized to delete the user
+  if (!isSameUser && !isAdmin) throw Error.invalidCredentials('Not authorized to delete this user');
+
+  // Admins can update any user with the admin password, but not themselves with the admin password
+  if (isAdmin && !isSameUser && currentPassword !== process.env.ADMIN_PASSWORD)
+    throw Error.invalidCredentials('Invalid admin password');
+
+  const changes = { user: user.username };
 
   if (file) {
     const oldFile = user.profile.profilePicture.split('/').pop();
@@ -118,16 +119,17 @@ async function updateUser(id, username, currentPassword, updatedFields, file) {
   }
 
   for (const [path, value] of Object.entries(updatedFields)) {
-    if (!allowedFields.includes(path) || user.get(path) === value || !value) continue;
+    // Skip if the value is the same as the current value or if the value is empty
+    if (user.get(path) === value || !value) continue;
 
     switch (path) {
       case 'password':
-        if (!(await comparePasswords(currentPassword, user.password))) {
+        // Users can update themselves with their password
+        if (isSameUser && !(await comparePasswords(currentPassword, user.password)))
           throw Error.invalidCredentials('Invalid password');
-        }
         user.password = value;
         changes.password = { message: 'Password changed, signed out of all sessions' };
-        await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': id });
+        await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': user.id });
         break;
       case 'email':
         user.newEmail = value;
@@ -152,22 +154,43 @@ async function updateUser(id, username, currentPassword, updatedFields, file) {
     throw error;
   }
 
-  return { changes };
+  return { changes, destroySessions: isSameUser };
 }
 
 /**
- * Deletes a user and all their sessions
- * @param {string} id - The requesting user id from the session
+ * Deletes a user and all their sessions, admins can delete any user without a password or themselves with a password
+ * @param {string} requestingUser - The requesting user from the session
+ * @param {string} username - The username of the user to delete
  * @param {string} password - The password of the user to delete
  * @throws {Error} - If the user is not found or the password is invalid
  */
-async function deleteUser(id, password) {
-  const user = await User.findById(id);
-  if (!user) throw Error.userNotFound('User not found');
-  if (!(await comparePasswords(password, user.password))) throw Error.invalidCredentials('Invalid password');
+async function deleteUser(requestingUser, username, password) {
+  // Find the user to delete
+  const user = await User.findOne({ username });
+  if (!user) throw Error.userNotFound(`User '${username}' not found`);
 
-  await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': id });
-  await User.deleteOne({ _id: id });
+  // Check if the requesting user is an admin or the same user
+  const isAdmin = requestingUser.profile.roles.includes('admin');
+  const isSameUser = requestingUser.id === user.id;
+
+  // Check if the user is authorized to delete the user
+  if (!isSameUser && !isAdmin) throw Error.invalidCredentials('Not authorized to delete this user');
+
+  // Admins can delete any user with the admin password, but not themselves with the admin password
+  if (isAdmin && !isSameUser && password !== process.env.ADMIN_PASSWORD)
+    throw Error.invalidCredentials('Invalid admin password');
+
+  // Users can delete themselves with their password
+  if (isSameUser && !(await comparePasswords(password, user.password)))
+    throw Error.invalidCredentials('Invalid password');
+
+  await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': user.id });
+  const oldFile = user.profile.profilePicture.split('/').pop();
+  if (oldFile !== 'default-avatar.jpg') await deleteFile(`uploads/avatars/${oldFile}`);
+  await uploadFile(null, `uploads/avatars/${user.id}-${Date.now()}.jpg`);
+  await User.deleteOne({ _id: user.id });
+
+  return { message: `User ${user.username} deleted`, destroySessions: isSameUser };
 }
 
 module.exports = {

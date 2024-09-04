@@ -8,6 +8,7 @@ async function sessionAuth(req, res, next) {
       next(Error.invalidCredentials('User not found'));
     }
     // User is authenticated, proceed to the next middleware/route handler
+    req.user = user;
     next();
   } else {
     // User is not authenticated send an error, frontend should redirect to login
@@ -15,4 +16,15 @@ async function sessionAuth(req, res, next) {
   }
 }
 
-module.exports = sessionAuth;
+// should only be used after sessionAuth
+async function adminAuth(req, res, next) {
+  if (!req.user.profile.roles.includes('admin')) {
+    next(Error.invalidCredentials('User is not an admin'));
+  }
+  next();
+}
+
+module.exports = {
+  sessionAuth,
+  adminAuth,
+};

@@ -5,7 +5,7 @@ const { userService } = require('../services');
 
 /**
  * @desc Verify user
- * @method GET
+ * @method PATCH
  */
 async function verifyUser(req, res) {
   await userService.verifyUser(req.user.id);
@@ -27,9 +27,7 @@ async function requestVerification(req, res) {
  * @method GET
  */
 async function getAllUsers(req, res) {
-  // Get the id from the verified session
-  const id = req.session.userId;
-  const users = await userService.getAllUsers(id);
+  const users = await userService.getAllUsers();
   res.status(200).json(users);
 }
 
@@ -60,29 +58,32 @@ async function registerUser(req, res) {
  * @method PUT
  */
 async function updateUser(req, res) {
-  // get the id from the verified session
-  const id = req.session.userId;
-  const file = req.file;
+  // get the reqyesting user verified from the session
+  const requestingUser = req.user;
+  // get the username of the user to update
   const username = req.params.username;
+  const file = req.file;
   const { currentPassword, ...updatedFields } = req.body;
-  const changes = await userService.updateUser(id, username, currentPassword, updatedFields, file);
-  if (changes.changes.password) req.session.destroy();
-
+  const changes = await userService.updateUser(requestingUser, username, currentPassword, updatedFields, file);
+  if (changes.destroySessions) req.session.destroy();
   res.status(200).json(changes);
 }
 
 /**
- * @desc Delete user
+ * @desc Delete user, if the user is an admin, they can delete any user unless it's themselves which then they need to provide their password
  * @method DELETE
  */
 async function deleteUser(req, res) {
-  // get the id from the verified session
-  const id = req.session.userId;
+  // get the reqyesting user verified from the session
+  const requestingUser = req.user;
+  // get the username of the user to delete
+  const username = req.params.username;
   // get the password from the request body
   const { password } = req.body;
-  await userService.deleteUser(id, password);
-  req.session.destroy();
-  res.status(204).json({ message: 'User deleted successfully' });
+  // delete the user
+  const result = await userService.deleteUser(requestingUser, username, password);
+  if (result.destroySessions) req.session.destroy();
+  res.status(204).end();
 }
 
 module.exports = {

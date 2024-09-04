@@ -1,11 +1,13 @@
 const { body, check } = require('express-validator');
 const jwt = require('jsonwebtoken');
 
-const { validateRequest, verifyCaptcha, sessionAuth } = require('../middlewares');
+const { validateRequest, verifyCaptcha, sessionAuth, adminAuth } = require('../middlewares');
 
 const verifyUser = [
   check('token').notEmpty().trim().escape().withMessage('Token is required'),
   async (req, res, next) => {
+    if (!req.headers.authorization) return res.status(400).json({ message: 'Token is required' });
+
     const token = req.headers.authorization.split(' ')[1];
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
@@ -22,7 +24,7 @@ const requestVerification = [
   validateRequest,
 ];
 
-const getAllUsers = [sessionAuth];
+const getAllUsers = [sessionAuth, adminAuth];
 
 const registerUser = [
   body('username')
@@ -47,6 +49,7 @@ const registerUser = [
 ];
 
 const updateUser = [
+  sessionAuth,
   body('username')
     .optional()
     .trim()
@@ -67,7 +70,7 @@ const updateUser = [
     .matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
     .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
   body('currentPassword')
-    .custom(async (value, { req }) => {
+    .custom((value, { req }) => {
       const password = req.body.password;
       if (password && !value) {
         throw new Error('Current password is required');
@@ -78,9 +81,22 @@ const updateUser = [
     .escape()
     .withMessage('Current password is required'),
   validateRequest,
+  (req, res, next) => {
+    const allowedFields = ['username', 'email', 'password', 'currentPassword', 'profile.displayName', 'profile.bio'];
+    const receivedFields = Object.keys(req.body);
+    const invalidFields = receivedFields.filter((field) => !allowedFields.includes(field));
+    if (invalidFields.length > 0) {
+      return res.status(400).json({ message: `Invalid fields: ${invalidFields.join(', ')}` });
+    }
+    next();
+  },
 ];
 
-const deleteUser = [body('password').notEmpty().trim().escape().withMessage('Password is required'), validateRequest];
+const deleteUser = [
+  sessionAuth,
+  body('password').notEmpty().trim().escape().withMessage('Password is required'),
+  validateRequest,
+];
 
 module.exports = {
   verifyUser,

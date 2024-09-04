@@ -1,13 +1,12 @@
 const errorHandler = require('./errorHandler');
 const validateRequest = require('./validateRequest');
-const sessionAuth = require('./sessionAuth');
 const verifyCaptcha = require('./verifyCaptcha');
 const rateLimiter = require('./rateLimiter');
 
 module.exports = {
   errorHandler,
   validateRequest,
-  sessionAuth,
+  ...require('./sessionAuth'),
   verifyCaptcha,
   rateLimiter,
 };
