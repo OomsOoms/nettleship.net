@@ -1,4 +1,0 @@
-- name: users
-  description: Operations related to users
-- name: sessions
-  description: Operations related to sessions

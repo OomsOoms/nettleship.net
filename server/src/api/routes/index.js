@@ -1,5 +1,4 @@
-const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('../../config/swagger');
+const { swaggerSpec, swaggerUi } = require('../../config/swagger/swagger');
 const userRoutes = require('./user.routes');
 const sessionRoutes = require('./session.routes');
 

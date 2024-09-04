@@ -19,7 +19,7 @@ async function sessionAuth(req, res, next) {
 // should only be used after sessionAuth
 async function adminAuth(req, res, next) {
   if (!req.user.profile.roles.includes('admin')) {
-    next(Error.invalidCredentials('User is not an admin'));
+    next(Error.forbidden('User is not an admin'));
   }
   next();
 }

@@ -1,0 +1,414 @@
+openapi: 3.0.0
+info:
+  title: Nettleship.net API
+  description: API documentation for nettleship.net, this is only intended for development purposes and should probably not be available in production.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000/api
+    description: Local server
+  - url: https://327q7d81-8000.uks1.devtunnels.ms/api
+    description: Dev server
+tags:
+  - name: Users
+    description: User CRUD operations and verification
+paths:
+  /users/verify:
+    patch:
+      summary: Verify user
+      description: The JWT token should be entered into the [Authorize 🔒] button each time you get a new one.
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Email verified"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Token is required"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid token"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User not found or email already verified"
+    post:
+      summary: Request verification
+      description: Request a verification email to be sent to the user, this is only available for unverified users.
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: test@email.com
+      responses:
+        "200":
+          description: Verification requested successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Verification email sent"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "404":
+          description: User not found or email already verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User not found or email already verified"
+  /users:
+    get:
+      summary: Get all users
+      description: Must be logged in. Get all users, only available for admins.
+      tags:
+        - Users
+      responses:
+        "200":
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User is not an admin"
+    post:
+      summary: Register a new user
+      description: Register a new user this will send an email to the user with a verification link. The hCaptcha token is required during production.
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterUser"
+      responses:
+        "201":
+          description: User registered successfully, check your email
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User registered successfully, check your email"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "409":
+          description: Conflict, username or email already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Username already exists
+  /users/{username}:
+    get:
+      summary: Get user by username
+      description: Get a user by their username, the owner of the account is shown additional information when logged in.
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+            pattern: ^[a-z0-9_.-]{3,20}$
+          description: Username of the user to retrieve
+      responses:
+        "200":
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User with username '{username}' not found"
+    patch:
+      summary: Update user
+      description: Must be logged in. Update a user by their username. Admins can update any user using the admin password. Users can update their own account without a password, except when changing their password, in which case the current password is required.
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: Username of the user to update
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UpdateUser"
+      responses:
+        "200":
+          description: User found successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: string
+                  field:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      value:
+                        type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized | Invalid password | Invalid admin password"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User with username '{username}' not found"
+        "409":
+          description: Conflict, username or email already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Username already exists
+    delete:
+      summary: Delete user
+      description: Must be logged in. Delete a user by their usernam. Admins can delete any user using the admin password. Users can delete their own account with their password.
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+            pattern: ^[a-z0-9_.-]{3,20}$
+          description: Username of the user to delete
+      responses:
+        "204":
+          description: User deleted successfully"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized | Invalid password | Invalid admin password"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User with username '{username}' not found"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        profile:
+          type: object
+          properties:
+            displayName:
+              type: string
+            bio:
+              type: string
+            profilePicture:
+              type: string
+            roles:
+              type: array
+              items:
+                type: string
+        settings:
+          type: object
+          properties:
+            language:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+        passwordChangedAt:
+          type: string
+          format: date-time
+        __v:
+          type: integer
+    RegisterUser:
+      type: object
+      required:
+        - username
+        - email
+        - password
+        - hCaptchaToken
+      example:
+        username: test
+        email: test@email.com
+        password: Password123
+        hCaptchaToken: ES_259e...
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    UpdateUser:
+      type: object
+      properties:
+        username:
+          type: string
+          example: ""
+        email:
+          type: string
+          example: ""
+        password:
+          type: string
+          example: ""
+        currentPassword:
+          type: string
+          example: ""
+        profile.displayName:
+          type: string
+          example: ""
+        profile.bio:
+          type: string
+          example: ""
+        avatar:
+          type: string
+          format: binary
+    ValidationErrorResponse:
+      type: object
+      properties:
+        message:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              value:
+                type: string
+              msg:
+                type: string
+              path:
+                type: string
+              location:
+                type: string

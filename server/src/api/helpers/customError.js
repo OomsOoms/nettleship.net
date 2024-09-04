@@ -12,7 +12,7 @@ class CustomError extends Error {
     return new CustomError(401, message);
   }
 
-  static accountNotActive(message = 'Account not active') {
+  static forbidden(message = 'Forbidden') {
     return new CustomError(403, message);
   }
 

@@ -36,7 +36,7 @@ async function getAllUsers(req, res) {
  * @method GET
  */
 async function getUserByUsername(req, res) {
-  // Get the id from the verified token
+  // Get the id from the verified token (full user object is only on routes that require authentication)
   const id = req.session.userId;
   const username = req.params.username;
   const user = await userService.getUserByUsername(id, username);

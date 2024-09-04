@@ -95,7 +95,7 @@ async function registerUser(username, email, password) {
 async function updateUser(requestingUser, username, currentPassword, updatedFields, file) {
   // Find the user to update
   const user = await User.findOne({ username });
-  if (!user) throw Error.userNotFound(`User '${username}' not found`);
+  if (!user) throw Error.userNotFound(`User with username '${username}' not found`);
 
   // Check if the requesting user is an admin or the same user
   const isAdmin = requestingUser.profile.roles.includes('admin');
@@ -167,7 +167,7 @@ async function updateUser(requestingUser, username, currentPassword, updatedFiel
 async function deleteUser(requestingUser, username, password) {
   // Find the user to delete
   const user = await User.findOne({ username });
-  if (!user) throw Error.userNotFound(`User '${username}' not found`);
+  if (!user) throw Error.userNotFound(`User with username '${username}' not found`);
 
   // Check if the requesting user is an admin or the same user
   const isAdmin = requestingUser.profile.roles.includes('admin');
