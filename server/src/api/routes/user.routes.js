@@ -1,10 +1,10 @@
 const router = require('express-promise-router')();
+const multer = require('multer');
+
 const { userController: uc } = require('../controllers');
 const { userValidatonRules: uvr } = require('../validations');
 
-const multer = require('multer');
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage, limits: { fileSize: 1024 * 1024 * 5 } });
+const upload = multer({ storage: multer.memoryStorage() });
 
 // /api/users
 router

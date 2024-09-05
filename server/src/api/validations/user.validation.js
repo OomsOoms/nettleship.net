@@ -1,5 +1,6 @@
 const { body, check } = require('express-validator');
 const jwt = require('jsonwebtoken');
+const sharp = require('sharp');
 
 const { validateRequest, verifyCaptcha, sessionAuth, adminAuth } = require('../middlewares');
 
@@ -50,6 +51,25 @@ const registerUser = [
 
 const updateUser = [
   sessionAuth,
+  async (req, res, next) => {
+    if (req.file) {
+      const imageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      if (!imageTypes.includes(req.file.mimetype))
+        return res.status(400).json({ message: 'Image must be a jpeg, png, or gif' });
+
+      const { width, height } = await sharp(req.file.buffer).metadata();
+      if (width !== height || width > 500 || width < 100)
+        return res.status(400).json({
+          message:
+            width !== height
+              ? 'Image must be square'
+              : width > 500
+                ? 'Image must be 500x500 pixels or less'
+                : 'Image must be 100x100 pixels or more',
+        });
+    }
+    next();
+  },
   body('username')
     .optional()
     .trim()

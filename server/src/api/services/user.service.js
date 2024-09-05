@@ -113,7 +113,10 @@ async function updateUser(requestingUser, username, currentPassword, updatedFiel
   if (file) {
     const oldFile = user.profile.profilePicture.split('/').pop();
     if (oldFile !== 'default-avatar.jpg') await deleteFile(`uploads/avatars/${oldFile}`);
-    const result = await uploadFile(file, `uploads/avatars/${user.id}-${Date.now()}.jpg`);
+    const result = await uploadFile(
+      file,
+      `uploads/avatars/${user.id}-${Date.now()}.${file.originalname.split('.').pop()}`
+    );
     user.profile.profilePicture = `${process.env.CDN_DOMAIN}/${result.key}`;
     changes.profilePicture = { message: 'Profile picture updated' };
   }
@@ -154,7 +157,7 @@ async function updateUser(requestingUser, username, currentPassword, updatedFiel
     throw error;
   }
 
-  return { changes, destroySessions: isSameUser };
+  return { changes, destroySessions: isSameUser && changes.password };
 }
 
 /**
@@ -187,7 +190,7 @@ async function deleteUser(requestingUser, username, password) {
   await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': user.id });
   const oldFile = user.profile.profilePicture.split('/').pop();
   if (oldFile !== 'default-avatar.jpg') await deleteFile(`uploads/avatars/${oldFile}`);
-  await uploadFile(null, `uploads/avatars/${user.id}-${Date.now()}.jpg`);
+  await uploadFile(null, `uploads/avatars/${user.id}-${Date.now()}.${oldFile.split('.').pop()}`);
   await User.deleteOne({ _id: user.id });
 
   return { message: `User ${user.username} deleted`, destroySessions: isSameUser };
