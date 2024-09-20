@@ -1,72 +1,55 @@
 const { User } = require('../../src/api/models');
 const { verifyUser } = require('../../src/api/services/user.service');
-const jwt = require('jsonwebtoken');
-
-jest.mock('jsonwebtoken', () => ({
-    decode: jest.fn(),
-}));
+const { Error } = require('../../src/api/helpers');
+const { sendEmail } = require('../../src/api/helpers');
 
 jest.mock('../../src/api/models/user.model', () => ({
-    findByIdAndUpdate: jest.fn(),
     findById: jest.fn(),
 }));
 
-describe('userService.verifyUser', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
+jest.mock('../../src/api/helpers/sendEmail', () => jest.fn());
 
-    it('successfully verifies a user with a valid token', async () => {
-        const token = 'validToken';
-        const userId = '123';
-        const mockedUser = { id: userId, accountVerified: false };
+it('should verify user and update email if token is valid and user exists', async () => {
+    const mockedUser = {
+        id: '123',
+        email: 'old@example.com',
+        username: 'test',
+        newEmail: 'new@example.com',
+        save: jest.fn(),
+    };
 
-        jwt.decode.mockReturnValue(mockedUser);
-        User.findById.mockResolvedValue(mockedUser);
-        User.findByIdAndUpdate.mockResolvedValue({ ...mockedUser, accountVerified: true });
+    User.findById.mockResolvedValueOnce(mockedUser);
 
-        const result = await verifyUser(token);
+    await verifyUser('123');
 
-        expect(jwt.decode).toHaveBeenCalledWith(token);
-        expect(User.findByIdAndUpdate).toHaveBeenCalledWith(userId, {
-            $set: { accountVerified: true, unverifiedEmail: '', email: mockedUser.unverifiedEmail } }, { new: true });
-        expect(result).toEqual({ ...mockedUser, accountVerified: true });
-    });
+    expect(User.findById).toHaveBeenCalledWith('123');
+    expect(mockedUser.email).toBe('new@example.com');
+    expect(mockedUser.newEmail).toBe(null);
+    expect(mockedUser.save).toHaveBeenCalled();
+    expect(sendEmail).toHaveBeenCalledWith(
+        'old@example.com',
+        'Email changed',
+        'emailChanged',
+        { username: 'test', email: 'new@example.com' }
+    );
+});
 
-    it('throws an error for an invalid token', async () => {
-        const token = 'invalidToken';
+it('should throw an error if user is not found', async () => {
+    User.findById.mockResolvedValueOnce(null);
 
-        jwt.decode.mockReturnValue(null);
+    await expect(verifyUser('123')).rejects.toThrow('User not found or email already verified');
+    expect(User.findById).toHaveBeenCalledWith('123');
+});
 
-        await expect(verifyUser(token)).rejects.toThrow('Invalid token');
-    });
+it('should throw an error if user is already verified', async () => {
+    const mockedUser = {
+        id: '123',
+        email: 'old@example.com',
+        newEmail: null,
+    };
 
-    it('throws an error when no token is provided', async () => {
-        const token = null;
+    User.findById.mockResolvedValueOnce(mockedUser);
 
-        jwt.decode.mockReturnValue(null);
-
-        await expect(verifyUser(token)).rejects.toThrow('Invalid token');
-    });
-
-    it('throws an error for a non-existent user', async () => {
-        const token = 'validTokenForNonExistentUser';
-        const userId = '999'; // Assuming this user does not exist
-
-        jwt.decode.mockReturnValue({ id: userId });
-        User.findById.mockResolvedValue(null);
-
-        await expect(verifyUser(token)).rejects.toThrow('User not found');
-    });
-
-    it('does not change the status of an already verified user', async () => {
-        const token = 'validTokenForVerifiedUser';
-        const mockedUser = { id: '123', name: 'Test User', accountVerified: true };
-
-        jwt.decode.mockReturnValue(mockedUser);
-        User.findById.mockResolvedValue(mockedUser);
-        User.findByIdAndUpdate.mockResolvedValue(mockedUser); // User remains unchanged
-
-        await expect(verifyUser(token)).rejects.toThrow('User already verified');
-    });
+    await expect(verifyUser('123')).rejects.toThrow('User not found or email already verified');
+    expect(User.findById).toHaveBeenCalledWith('123');
 });

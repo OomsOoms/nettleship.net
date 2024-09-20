@@ -19,9 +19,9 @@ if (process.env.NODE_ENV === 'production') {
   // tests and development
   app.use(morgan('dev')); // console logs only
 }
-
 // Enable CORS for all routes
 app.use(corsMiddleware);
+app.set('trust proxy', 1);
 
 // built-in middleware for json
 app.use(express.json());

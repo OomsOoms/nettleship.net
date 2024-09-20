@@ -33,7 +33,7 @@ const UserSchema = new mongoose.Schema(
       },
       profilePicture: {
         type: String,
-        default: `${process.env.CDN_DOMAIN}/uploads/avatars/default-avatar.jpg`,
+        default: '/uploads/avatars/default-avatar.jpg',
       },
       roles: {
         type: [String],

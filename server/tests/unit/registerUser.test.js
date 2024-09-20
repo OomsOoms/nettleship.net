@@ -1,48 +1,40 @@
 const User = require('../../src/api/models/user.model');
 const { registerUser } = require('../../src/api/services/user.service');
-const { generateJwt, sendEmail } = require('../../src/api/helpers');
+const { Error, generateJwt, sendEmail } = require('../../src/api/helpers');
 
 jest.mock('../../src/api/models/user.model');
-
-jest.mock('../../src/api/helpers/decodeJwt', () => jest.fn());
 jest.mock('../../src/api/helpers/generateJwt', () => jest.fn());
 jest.mock('../../src/api/helpers/sendEmail', () => jest.fn());
 
+beforeEach(() => {
+    jest.clearAllMocks();
+});
 
-describe('userService.registerUser', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
+it('should register a new user', async () => {
+    User.findOne.mockResolvedValue(null);
+    User.prototype.save = jest.fn().mockResolvedValue({});
+    generateJwt.mockReturnValue('mockToken');
 
-    it('should register a new user', async () => {
-        User.findOne.mockResolvedValue(null);
+    await registerUser('newuser', 'newuser@test.com', 'password');
 
-        await registerUser('newuser', 'newuser@test.com', 'password');
-        expect(generateJwt).toHaveBeenCalled();
-        expect(sendEmail).toHaveBeenCalledWith('newuser@test.com', 'Verify your email', expect.any(String));
-        // should probably check if user.save() is called but im not sure how to do that
-    });
+    expect(User.prototype.save).toHaveBeenCalled();
+    expect(sendEmail).toHaveBeenCalledWith('newuser@test.com', 'Verify your email', 'verifyEmail', { username: 'newuser', token: 'mockToken' });
+});
 
-    it('should throw an error if the email already exists', async () => {
-        const mockUser = { username: 'test', email: 'test@example.com', password: 'test123' };
-        User.findOne.mockResolvedValue(mockUser);
-        const mockError = new Error();
-        mockError.code = 11000;
-        mockError.keyPattern = { email: 1 };
-        User.prototype.save.mockRejectedValue(mockError);
+it('should throw an error if the email already exists', async () => {
+    const mockError = new Error();
+    mockError.code = 11000;
+    mockError.keyPattern = { email: 1 };
+    User.prototype.save.mockRejectedValue(mockError);
 
-        await expect(registerUser(mockUser.username, mockUser.email, mockUser.password)).rejects.toThrow('Email already exists');
-    });
-    
-    it('should throw an error if the username already exists', async () => {
-        const mockUser = { username: 'test', email: 'test@example.com', password: 'test123' };
-        User.findOne.mockResolvedValue(mockUser);
-        const mockError = new Error();
-        mockError.code = 11000;
-        mockError.keyPattern = { username: 1 };
-        User.prototype.save.mockRejectedValue(mockError);
+    await expect(registerUser('newuser', 'existingemail@test.com', 'password')).rejects.toThrow('Email already exists');
+});
 
-        await expect(registerUser(mockUser.username, 'different@email.com', mockUser.password)).rejects.toThrow('Username already exists');
-    });
+it('should throw an error if the username already exists', async () => {
+    const mockError = new Error();
+    mockError.code = 11000;
+    mockError.keyPattern = { username: 1 };
+    User.prototype.save.mockRejectedValue(mockError);
 
+    await expect(registerUser('existinguser', 'newemail@test.com', 'password')).rejects.toThrow('Username already exists');
 });

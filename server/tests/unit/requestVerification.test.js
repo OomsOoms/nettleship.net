@@ -1,10 +1,7 @@
 const { User } = require('../../src/api/models');
 const { requestVerification } = require('../../src/api/services/user.service');
 const sendEmail = require('../../src/api/helpers/sendEmail');
-
-jest.mock('jsonwebtoken', () => ({
-    sign: jest.fn().mockImplementation(() => 'mockedToken'),
-}));
+const generateJwt = require('../../src/api/helpers/generateJwt');
 
 jest.mock('../../src/api/models/user.model', () => ({
     findOne: jest.fn(),
@@ -12,32 +9,33 @@ jest.mock('../../src/api/models/user.model', () => ({
 
 jest.mock('../../src/api/helpers/sendEmail', () => jest.fn());
 
-describe('userService.requestVerification', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
+jest.mock('../../src/api/helpers/generateJwt', () => jest.fn());
 
-    it('should send an email with verification link if user exists and not verified', async () => {
-        const mockedUser = { _id: '123', unverifiedEmail: 'test@example.com', accountVerified: false };
-        User.findOne.mockResolvedValueOnce(mockedUser);
-        const verificationLink = 'http://localhost:4000/api/users/verify?token=mockedToken';
+beforeEach(() => {
+    jest.clearAllMocks();
+});
 
-        await requestVerification('test@example.com');
+it('should send an email with verification link if user exists and not verified', async () => {
+    const mockedUser = { _id: '123', username: 'testuser', newEmail: 'test@example.com', id: '123' };
+    User.findOne.mockResolvedValueOnce(mockedUser);
+    generateJwt.mockReturnValueOnce('mockedToken');
 
-        expect(User.findOne).toHaveBeenCalledWith({ unverifiedEmail: 'test@example.com' });
-        expect(sendEmail).toHaveBeenCalledWith('test@example.com', 'Verify your email', verificationLink);
-    });
+    await requestVerification('test@example.com');
 
-    it('should throw an error if user not found', async () => {
-        User.findOne.mockResolvedValueOnce(null);
+    expect(User.findOne).toHaveBeenCalledWith({ newEmail: 'test@example.com' });
+    expect(generateJwt).toHaveBeenCalledWith({ id: mockedUser.id }, { expiresIn: '24h' });
+    expect(sendEmail).toHaveBeenCalledWith('test@example.com', 'Verify your email', 'verifyEmail', { username: mockedUser.username, token: 'mockedToken' });
+});
 
-        await expect(requestVerification('test@example.com')).rejects.toThrow('User not found');
-    });
+it('should throw an error if user not found', async () => {
+    User.findOne.mockResolvedValueOnce(null);
 
-    it('should throw an error if user is already verified', async () => {
-        const mockedUser = { _id: '123', email: 'test@example.com', accountVerified: true };
-        User.findOne.mockResolvedValueOnce(mockedUser);
-        
-        await expect(requestVerification('test@example.com')).rejects.toThrow('User already verified');
-    });
+    await expect(requestVerification('test@example.com')).rejects.toThrow('User not found or email already verified');
+});
+
+it('should throw an error if user is already verified', async () => {
+    const mockedUser = { _id: '123', username: 'testuser', newEmail: '' };
+    User.findOne.mockResolvedValueOnce(mockedUser);
+
+    await expect(requestVerification('test@example.com')).rejects.toThrow('User not found or email already verified');
 });

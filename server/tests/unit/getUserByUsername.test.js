@@ -5,23 +5,32 @@ jest.mock('../../src/api/models/user.model', () => ({
     findOne: jest.fn(),
 }));
 
-describe('userService.getUserByUsername', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
+beforeEach(() => {
+    jest.clearAllMocks();
+});
 
-    it('should successfully retrieve a user by username', async () => {
-        const mockUser = { username: 'testUser', email: 'test@example.com' };
-        User.findOne.mockResolvedValue(mockUser);
+it('should return the full user object if the requesting user is the same as the found user', async () => {
+    const mockUser = { id: '123', username: 'testuser', profile: { roles: ['user'] } };
+    User.findOne.mockResolvedValue(mockUser);
 
-        const result = await getUserByUsername('testUser');
-        expect(result).toEqual(mockUser);
-        expect(User.findOne).toHaveBeenCalledWith({ username: 'testUser' });
-    });
+    const result = await getUserByUsername('123', 'testuser');
 
-    it('should throw an error if the user does not exist', async () => {
-        User.findOne.mockResolvedValue(null);
+    expect(User.findOne).toHaveBeenCalledWith({ username: 'testuser' });
+    expect(result).toEqual(mockUser);
+});
 
-        await expect(getUserByUsername('testUser')).rejects.toThrow("User with username 'testUser' not found");
-    });
+it('should return a partial user object if the requesting user is different from the found user', async () => {
+    const mockUser = { id: '123', username: 'testuser', profile: { roles: ['user'] } };
+    User.findOne.mockResolvedValue(mockUser);
+
+    const result = await getUserByUsername('456', 'testuser');
+
+    expect(User.findOne).toHaveBeenCalledWith({ username: 'testuser' });
+    expect(result).toEqual({ username: 'testuser', profile: mockUser.profile });
+});
+
+it('should throw an error if the user is not found', async () => {
+    User.findOne.mockResolvedValue(null);
+
+    await expect(getUserByUsername('123', 'nonexistentuser')).rejects.toThrow("User with username 'nonexistentuser' not found");
 });

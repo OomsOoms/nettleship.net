@@ -10,8 +10,8 @@ const verifyCaptcha = async (req, res, next) => {
     if (data.success === true) {
       next();
     } else {
-      if (process.env.NODE_ENV === 'development') {
-        next(); // Skip captcha verification in development
+      if (process.env.NODE_ENV !== 'production') {
+        next(); // Skip captcha verification in development and testing
       } else {
         next(Error.invalidCredentials('Invalid captcha token'));
       }

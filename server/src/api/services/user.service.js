@@ -32,7 +32,7 @@ async function requestVerification(email) {
   const user = await User.findOne({ newEmail: email });
   if (!user || !user.newEmail) throw Error.userNotFound('User not found or email already verified');
 
-  const token = generateJwt({ id: user._id }, { expiresIn: '24h' });
+  const token = generateJwt({ id: user.id }, { expiresIn: '24h' });
   sendEmail(email, 'Verify your email', 'verifyEmail', { username: user.username, token });
 }
 
@@ -72,7 +72,7 @@ async function registerUser(username, email, password) {
     // This is because the newEmail field is the email that needs to be verified, but the email field cannot be empty.
     const user = new User({ username, newEmail: email, password });
     await user.save();
-    const token = generateJwt({ id: user._id }, { expiresIn: '24h' });
+    const token = generateJwt({ id: user.id }, { expiresIn: '24h' });
     sendEmail(email, 'Verify your email', 'verifyEmail', { username, token });
   } catch (error) {
     if (error.code === 11000) {
@@ -111,13 +111,10 @@ async function updateUser(requestingUser, username, currentPassword, updatedFiel
   const changes = { user: user.username };
 
   if (file) {
-    const oldFile = user.profile.profilePicture.split('/').pop();
-    if (oldFile !== 'default-avatar.jpg') await deleteFile(`uploads/avatars/${oldFile}`);
-    const result = await uploadFile(
-      file,
-      `uploads/avatars/${user.id}-${Date.now()}.${file.originalname.split('.').pop()}`
-    );
-    user.profile.profilePicture = `${process.env.CDN_DOMAIN}/${result.key}`;
+    const oldFile = user.profile.profilePicture;
+    if (oldFile !== 'default-avatar.jpg') await deleteFile(oldFile);
+    const result = await uploadFile(file, oldFile);
+    user.set('profile.profilePicture', result.key);
     changes.profilePicture = { message: 'Profile picture updated' };
   }
 
@@ -130,12 +127,13 @@ async function updateUser(requestingUser, username, currentPassword, updatedFiel
         // Users can update themselves with their password
         if (isSameUser && !(await comparePasswords(currentPassword, user.password)))
           throw Error.invalidCredentials('Invalid password');
-        user.password = value;
+        user.set(path, value);
         changes.password = { message: 'Password changed, signed out of all sessions' };
         await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': user.id });
         break;
       case 'email':
-        user.newEmail = value;
+        // newEmail instead of email, this is the request is email instead of newEmail
+        user.set('newEmail', value);
         changes.email = { message: 'Email change requested, verify email', value };
         break;
       default:
@@ -146,7 +144,7 @@ async function updateUser(requestingUser, username, currentPassword, updatedFiel
   try {
     await user.save();
     if (changes.email) {
-      const token = generateJwt({ id: user._id }, { expiresIn: '24h' });
+      const token = generateJwt({ id: user.id }, { expiresIn: '24h' });
       sendEmail(changes.email.value, 'Verify your email', 'verifyEmail', { username: user.username, token });
     }
   } catch (error) {
@@ -157,7 +155,7 @@ async function updateUser(requestingUser, username, currentPassword, updatedFiel
     throw error;
   }
 
-  return { changes, destroySessions: isSameUser && changes.password };
+  return { changes, destroySessions: isSameUser && changes.password !== undefined };
 }
 
 /**
@@ -188,10 +186,9 @@ async function deleteUser(requestingUser, username, password) {
     throw Error.invalidCredentials('Invalid password');
 
   await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': user.id });
-  const oldFile = user.profile.profilePicture.split('/').pop();
-  if (oldFile !== 'default-avatar.jpg') await deleteFile(`uploads/avatars/${oldFile}`);
-  await uploadFile(null, `uploads/avatars/${user.id}-${Date.now()}.${oldFile.split('.').pop()}`);
-  await User.deleteOne({ _id: user.id });
+  const oldFile = user.profile.profilePicture;
+  if (oldFile !== '/uploads/avatars/default-avatar.jpg') await deleteFile(oldFile);
+  await User.deleteOne({ id: user.id });
 
   return { message: `User ${user.username} deleted`, destroySessions: isSameUser };
 }
