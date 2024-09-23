@@ -1,8 +1,20 @@
 const mongoose = require('mongoose');
-const { hashPassword } = require('../helpers');
+const bcryptjs = require('bcryptjs');
+
+/**
+ * I use this so that all authentication is handled through a single passport strategy
+ *       required: function () {
+        if (this.googleId) return false;
+      },
+ */
 
 const UserSchema = new mongoose.Schema(
   {
+    googleId: {
+      type: String,
+      default: null,
+      unique: true,
+    },
     username: {
       type: String,
       required: true,
@@ -11,16 +23,24 @@ const UserSchema = new mongoose.Schema(
     email: {
       type: String,
       default: null,
+      required: function () {
+        if (this.googleId) return false;
+      },
     },
     newEmail: {
       type: String,
+      default: null,
       required: function () {
+        if (this.googleId) return false;
         return this.isNew;
       },
     },
     password: {
       type: String,
-      required: true,
+      default: null,
+      required: function () {
+        if (this.googleId) return false;
+      },
     },
     profile: {
       displayName: {
@@ -68,7 +88,7 @@ UserSchema.index(
 UserSchema.pre('save', async function (next) {
   // Only hash the password if it has been modified or is new
   if (this.isModified('password')) {
-    this.password = await hashPassword(this.password);
+    this.password = await bcryptjs.hash(this.password, process.env.SALT_ROUNDS || 10);
     this.passwordChangedAt = Date.now();
   }
   // If the user is new, set the displayName to the username
@@ -90,6 +110,10 @@ UserSchema.pre('save', async function (next) {
   }
   next();
 });
+
+UserSchema.methods.verifyPassword = async function (password) {
+  return bcryptjs.compare(password, this.password);
+};
 
 const User = mongoose.model('User', UserSchema);
 

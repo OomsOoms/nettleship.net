@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const { User } = require('../models');
-const { generateJwt, comparePasswords, sendEmail, uploadFile, deleteFile } = require('../helpers');
+const { generateJwt, sendEmail, uploadFile, deleteFile } = require('../helpers');
 const { Error } = require('../helpers');
 
 /**
@@ -74,6 +74,7 @@ async function registerUser(username, email, password) {
     await user.save();
     const token = generateJwt({ id: user.id }, { expiresIn: '24h' });
     sendEmail(email, 'Verify your email', 'verifyEmail', { username, token });
+    return user;
   } catch (error) {
     if (error.code === 11000) {
       const conflicField = error.keyPattern.email || error.keyPattern.newEmail ? 'Email' : 'Username';
@@ -125,7 +126,7 @@ async function updateUser(requestingUser, username, currentPassword, updatedFiel
     switch (path) {
       case 'password':
         // Users can update themselves with their password
-        if (isSameUser && !(await comparePasswords(currentPassword, user.password)))
+        if (isSameUser && !(await user.verifyPassword(currentPassword)))
           throw Error.invalidCredentials('Invalid password');
         user.set(path, value);
         changes.password = { message: 'Password changed, signed out of all sessions' };
@@ -182,8 +183,7 @@ async function deleteUser(requestingUser, username, password) {
     throw Error.invalidCredentials('Invalid admin password');
 
   // Users can delete themselves with their password
-  if (isSameUser && !(await comparePasswords(password, user.password)))
-    throw Error.invalidCredentials('Invalid password');
+  if (isSameUser && !(await user.verifyPassword(password))) throw Error.invalidCredentials('Invalid password');
 
   await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': user.id });
   const oldFile = user.profile.profilePicture;

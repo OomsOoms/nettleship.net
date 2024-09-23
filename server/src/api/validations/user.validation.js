@@ -2,7 +2,8 @@ const { body, check } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const sharp = require('sharp');
 
-const { validateRequest, verifyCaptcha, sessionAuth, adminAuth } = require('../middlewares');
+const { verifyCaptcha } = require('../middlewares');
+const validateRequest = require('./validateRequest');
 
 const verifyUser = [
   check('token').notEmpty().trim().escape().withMessage('Token is required'),
@@ -25,7 +26,17 @@ const requestVerification = [
   validateRequest,
 ];
 
-const getAllUsers = [sessionAuth, adminAuth];
+const getAllUsers = [
+  async (req, res, next) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    if (!req.user.profile.roles.includes('admin')) {
+      return res.status(403).json({ message: 'User is not an admin' });
+    }
+    next();
+  },
+];
 
 const registerUser = [
   body('username')
@@ -50,7 +61,12 @@ const registerUser = [
 ];
 
 const updateUser = [
-  sessionAuth,
+  async (req, res, next) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    next();
+  },
   async (req, res, next) => {
     if (req.file) {
       const imageTypes = ['image/jpeg', 'image/png', 'image/gif'];
@@ -113,7 +129,12 @@ const updateUser = [
 ];
 
 const deleteUser = [
-  sessionAuth,
+  async (req, res, next) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    next();
+  },
   body('password').notEmpty().trim().escape().withMessage('Password is required'),
   validateRequest,
 ];

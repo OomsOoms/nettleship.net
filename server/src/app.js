@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const morgan = require('morgan');
+const passport = require('passport');
 
 const corsMiddleware = require('./config/corsOptions');
 const { logger, accessLogStream } = require('./config/logger');
@@ -26,8 +27,10 @@ app.set('trust proxy', 1);
 // built-in middleware for json
 app.use(express.json());
 
-// session middleware need to move this to a separate file
+// session middleware for passport and express-session
 app.use(sessionConfig);
+app.use(passport.initialize()); // init passport on every route call // adds the req.isAuthenticated() method and req.user object etc
+app.use(passport.session()); //allow passport to use "express-session"
 
 // rate limiter middleware - limits the number of requests from an IP
 app.use(rateLimiter.generalLimiter);
@@ -37,6 +40,23 @@ app.use(express.static('public'));
 
 // routes
 require('./api/routes')(app);
+
+app.get('/login', (req, res) => {
+  res.send(`
+ <html>
+      <body>
+        <h1>Login</h1>
+        <a href="/api/auth/google">Authenticate with Google</a>
+      </body>
+    </html>
+  `);
+});
+
+app.get('/protected', (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ message: 'Unauthorized' });
+  res.send(`Hello ${req.user.username}`);
+});
+// req.login() will login a user on signup
 
 // error handling middleware
 app.all('*', (req, res) => {

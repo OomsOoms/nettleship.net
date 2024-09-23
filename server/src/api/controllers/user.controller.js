@@ -42,15 +42,24 @@ async function getUserByUsername(req, res) {
   const user = await userService.getUserByUsername(id, username);
   res.status(200).json(user);
 }
+
 /**
  * @desc Register a new user
  * @method POST
  */
-async function registerUser(req, res) {
+async function registerUser(req, res, next) {
   // get the username, email, and password from the request body
   const { username, email, password } = req.body;
-  await userService.registerUser(username, email, password);
-  res.status(201).json({ message: 'User registered successfully, check your email' });
+  const user = await userService.registerUser(username, email, password);
+  // Log the user in
+  req.login(user, (err) => {
+    if (err) {
+      return next(err);
+    }
+    req.session.ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    req.session.userAgent = req.headers['user-agent'];
+    res.status(201).json({ message: 'User registered and logged in successfully, check your email' });
+  });
 }
 
 /**
