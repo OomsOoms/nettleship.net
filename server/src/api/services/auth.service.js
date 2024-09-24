@@ -2,13 +2,14 @@ const { User } = require('../models');
 
 async function handleGoogleStrategy(accessToken, refreshToken, profile, cb) {
   try {
-    const existingUser = await User.findOne({ googleId: profile.id });
+    return cb(null, true);
+    // Check if the user already exists and return it if they do
+    const existingUser = await User.findOne({ 'google.id': profile.id });
     if (existingUser) return cb(null, existingUser);
 
+    // Generate unique usernames until we find one that doesn't exist
     const baseUsername = profile.email.split('@')[0];
     let uniqueUsername = baseUsername;
-
-    // Generate unique usernames until we find one that doesn't exist
     let count = 1;
     while (await User.findOne({ username: uniqueUsername })) {
       uniqueUsername = `${baseUsername}${count}`;
@@ -16,11 +17,14 @@ async function handleGoogleStrategy(accessToken, refreshToken, profile, cb) {
     }
 
     const user = new User({
-      googleId: profile.id,
+      google: {
+        id: profile.id,
+        email: profile.email,
+      },
       username: uniqueUsername,
       profile: {
         displayName: profile.displayName,
-        profilePicture: profile.picture,
+        avatarUrl: profile.picture,
       },
     });
     await user.save();

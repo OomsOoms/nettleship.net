@@ -22,7 +22,6 @@ passport.serializeUser(function (user, cb) {
     const serializedUser = {
       id: user.id,
       provider: user.provider || 'local',
-      avatarUrl: user.profile.profilePicture, // TODO: change to avatarUrl in db
     };
     return cb(null, serializedUser);
   });

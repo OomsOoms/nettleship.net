@@ -11,15 +11,9 @@ const { Error } = require('../helpers');
  */
 async function verifyUser(id) {
   const user = await User.findById(id);
-  // The newEmail is only set when the user has an email that needs to be verified
-  if (!user || !user.newEmail) throw Error.userNotFound('User not found or email already verified');
-
-  if (user.email) {
-    sendEmail(user.email, 'Email changed', 'emailChanged', { username: user.username, email: user.newEmail });
-  }
-
-  user.email = user.newEmail;
-  user.newEmail = null;
+  if (!user || !user.local.newEmail) throw Error.userNotFound('User not found or email already verified');
+  user.local.email = user.local.newEmail;
+  user.local.newEmail = null;
   await user.save();
 }
 
@@ -29,11 +23,9 @@ async function verifyUser(id) {
  * @throws {Error} - If the user is not found or the email is already verified
  */
 async function requestVerification(email) {
-  const user = await User.findOne({ newEmail: email });
-  if (!user || !user.newEmail) throw Error.userNotFound('User not found or email already verified');
-
-  const token = generateJwt({ id: user.id }, { expiresIn: '24h' });
-  sendEmail(email, 'Verify your email', 'verifyEmail', { username: user.username, token });
+  const user = await User.findOne({ 'local.newEmail': email });
+  if (!user || !user.local.newEmail) throw Error.userNotFound('User not found or email already verified');
+  user.sendVerificationEmail();
 }
 
 /**
@@ -55,7 +47,7 @@ async function getAllUsers() {
 async function getUserByUsername(id, username) {
   const user = await User.findOne({ username });
   if (!user) throw Error.userNotFound(`User with username '${username}' not found`);
-
+  // Return the full user if the requesting user is the same user else return only the username and profile
   return id === user.id ? user : { username: user.username, profile: user.profile };
 }
 
@@ -68,16 +60,12 @@ async function getUserByUsername(id, username) {
  */
 async function registerUser(username, email, password) {
   try {
-    // When a user is created, the email field is initially set to the value of the newEmail field.
-    // This is because the newEmail field is the email that needs to be verified, but the email field cannot be empty.
-    const user = new User({ username, newEmail: email, password });
+    const user = new User({ username, 'local.newEmail': email, 'local.password': password });
     await user.save();
-    const token = generateJwt({ id: user.id }, { expiresIn: '24h' });
-    sendEmail(email, 'Verify your email', 'verifyEmail', { username, token });
     return user;
   } catch (error) {
     if (error.code === 11000) {
-      const conflicField = error.keyPattern.email || error.keyPattern.newEmail ? 'Email' : 'Username';
+      const conflicField = Object.keys(error.keyPattern).slice(-1)[0] === 'username' ? 'Username' : 'Email';
       throw Error.mongoConflictError(`${conflicField} already exists`);
     }
     throw error;
@@ -112,11 +100,12 @@ async function updateUser(requestingUser, username, currentPassword, updatedFiel
   const changes = { user: user.username };
 
   if (file) {
-    const oldFile = user.profile.profilePicture;
+    const oldFile = user.profile.avatarUrl;
     if (oldFile !== 'default-avatar.jpg') await deleteFile(oldFile);
-    const result = await uploadFile(file, oldFile);
-    user.set('profile.profilePicture', result.key);
-    changes.profilePicture = { message: 'Profile picture updated' };
+    const filename = `${Date.now()}-${user.id}.jpg`;
+    const result = await uploadFile(file, `/uploads/avatars/${filename}`);
+    user.set('profile.avatarUrl', result.key);
+    changes.avatarUrl = { message: 'Profile picture updated' };
   }
 
   for (const [path, value] of Object.entries(updatedFields)) {
@@ -186,7 +175,7 @@ async function deleteUser(requestingUser, username, password) {
   if (isSameUser && !(await user.verifyPassword(password))) throw Error.invalidCredentials('Invalid password');
 
   await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': user.id });
-  const oldFile = user.profile.profilePicture;
+  const oldFile = user.profile.avatarUrl;
   if (oldFile !== '/uploads/avatars/default-avatar.jpg') await deleteFile(oldFile);
   await User.deleteOne({ id: user.id });
 

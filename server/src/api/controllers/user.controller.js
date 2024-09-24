@@ -37,7 +37,7 @@ async function getAllUsers(req, res) {
  */
 async function getUserByUsername(req, res) {
   // Get the id from the verified token (full user object is only on routes that require authentication)
-  const id = req.session.userId;
+  const id = req.user ? req.user.id : null;
   const username = req.params.username;
   const user = await userService.getUserByUsername(id, username);
   res.status(200).json(user);
@@ -47,18 +47,16 @@ async function getUserByUsername(req, res) {
  * @desc Register a new user
  * @method POST
  */
-async function registerUser(req, res, next) {
+async function registerUser(req, res) {
   // get the username, email, and password from the request body
   const { username, email, password } = req.body;
   const user = await userService.registerUser(username, email, password);
-  // Log the user in
+  // Same code is seen in login controller
   req.login(user, (err) => {
-    if (err) {
-      return next(err);
-    }
     req.session.ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     req.session.userAgent = req.headers['user-agent'];
     res.status(201).json({ message: 'User registered and logged in successfully, check your email' });
+    // res.redirect('/dashboard');
   });
 }
 

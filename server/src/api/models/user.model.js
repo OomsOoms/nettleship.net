@@ -1,45 +1,60 @@
 const mongoose = require('mongoose');
 const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { sendEmail } = require('../helpers');
 
 /**
- * I use this so that all authentication is handled through a single passport strategy
- *       required: function () {
-        if (this.googleId) return false;
-      },
+ * required: function () {
+          return !this.googleId && this.isNew;
+        },
  */
+// these dont seem to work
+function googleSignUpRequired() {
+  return this.isNew && this.google.id;
+}
+
+function localSignUpRequired() {
+  console.log('googleSignUpRequired', this.isNew, this.google.id);
+  console.log('localSignUpRequired', this.isNew, !this.google.id);
+  return this.isNew && !this.google.id;
+}
 
 const UserSchema = new mongoose.Schema(
   {
-    googleId: {
-      type: String,
-      default: null,
-      unique: true,
-    },
     username: {
       type: String,
-      required: true,
       unique: true,
+      required: true,
     },
-    email: {
-      type: String,
-      default: null,
-      required: function () {
-        if (this.googleId) return false;
+    google: {
+      id: {
+        type: String,
+        default: null,
+        // unique: unless null
+        //required: googleSignUpRequired,
+      },
+      email: {
+        type: String,
+        default: null,
+        // required: googleSignUpRequired,
       },
     },
-    newEmail: {
-      type: String,
-      default: null,
-      required: function () {
-        if (this.googleId) return false;
-        return this.isNew;
+    local: {
+      email: {
+        type: String,
+        default: null,
+        // unique: unless null
       },
-    },
-    password: {
-      type: String,
-      default: null,
-      required: function () {
-        if (this.googleId) return false;
+      newEmail: {
+        type: String,
+        default: null,
+        // unique: unless null
+        //required: localSignUpRequired,
+      },
+      password: {
+        type: String,
+        default: null,
+        //required: localSignUpRequired,
       },
     },
     profile: {
@@ -51,9 +66,10 @@ const UserSchema = new mongoose.Schema(
         type: String,
         default: '',
       },
-      profilePicture: {
+      avatarUrl: {
         type: String,
         default: '/uploads/avatars/default-avatar.jpg',
+        //required: googleSignUpRequired,
       },
       roles: {
         type: [String],
@@ -78,41 +94,69 @@ const UserSchema = new mongoose.Schema(
   { collection: 'Users' }
 );
 
-UserSchema.index({ name: 1, email: 1 }, { unique: true, partialFilterExpression: { email: { $type: 'string' } } });
+// Indexes - some unique indexes are partial to allow for null values
 UserSchema.index(
-  { name: 1, newEmail: 1 },
-  { unique: true, partialFilterExpression: { newEmail: { $type: 'string' } } }
+  { name: 1, 'local.email': 1 },
+  { unique: true, partialFilterExpression: { 'local.email': { $type: 'string' } } }
 );
+UserSchema.index(
+  { name: 1, 'local.newEmail': 1 },
+  { unique: true, partialFilterExpression: { 'local.newEmail': { $type: 'string' } } }
+);
+UserSchema.index({ 'google.id': 1 }, { unique: true, partialFilterExpression: { 'google.id': { $type: 'string' } } });
 
-// run when a document is saved with await user.save()
+// Run when a document is saved with await user.save()
 UserSchema.pre('save', async function (next) {
-  // Only hash the password if it has been modified or is new
-  if (this.isModified('password')) {
-    this.password = await bcryptjs.hash(this.password, process.env.SALT_ROUNDS || 10);
+  this.oldDocument = this;
+  this.wasNew = this.isNew;
+  // Hash the password if it has been modified or is new
+  if (this.isModified('local.password')) {
+    this.local.password = await bcryptjs.hash(this.local.password, process.env.SALT_ROUNDS || 10);
     this.passwordChangedAt = Date.now();
   }
-  // If the user is new, set the displayName to the username
-  if (this.isNew) {
-    this.profile.displayName = this.username;
+
+  if (this.isModified())
+    if (this.isNew) {
+      // Set displayName to username for new users
+      this.profile.displayName = this.username;
+    }
+
+  // Ensure email and newEmail do not overlap, the error is thrown when saving
+  const existingUser = await this.constructor.findOne({
+    $or: [{ 'local.email': this.local.newEmail }, { 'local.newEmail': this.local.email }],
+  });
+  if (existingUser && existingUser.id !== this.id) {
+    [this.local.email, this.local.newEmail] = [this.local.newEmail, this.local.email];
   }
-  // Ensure that email and newEmail do not have overlapping unique values
-  const query = {
-    $or: [...(this.newEmail ? [{ email: this.newEmail }] : []), ...(this.email ? [{ newEmail: this.email }] : [])],
-  };
-  const existingUser = query.$or.length ? await User.findOne(query) : null;
-  if (existingUser) {
-    if (existingUser.id !== this.id) {
-      // Swap the vaues as this will force a default mongo conflict error
-      const temp = this.newEmail;
-      this.newEmail = this.email;
-      this.email = temp;
+  next();
+});
+
+// Run when a document is saved with await user.save()
+UserSchema.post('save', async function (doc, next) {
+  // Send a welcome email to new google users
+  if (doc.google.email && doc.wasNew) {
+    console.log('Sending welcome email to new google user');
+  }
+  // Send an email confirmation to new local users
+  if (doc.local.newEmail !== doc.oldDocument.local.newEmail) {
+    doc.sendVerificationEmail();
+    if (doc.local.email) {
+      sendEmail(doc.local.email, 'Email changed', 'emailChanged', {
+        username: doc.username,
+        email: doc.local.newEmail,
+      });
     }
   }
   next();
 });
 
 UserSchema.methods.verifyPassword = async function (password) {
-  return bcryptjs.compare(password, this.password);
+  return bcryptjs.compare(password, this.local.password);
+};
+
+UserSchema.methods.sendVerificationEmail = function () {
+  const token = jwt.sign({ id: this.id }, process.env.JWT_SECRET_KEY, { expiresIn: '24h' });
+  sendEmail(this.local.newEmail, 'Verify your email', 'verifyEmail', { username: this.username, token });
 };
 
 const User = mongoose.model('User', UserSchema);

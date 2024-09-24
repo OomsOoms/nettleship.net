@@ -6,11 +6,12 @@ function localLogin(req, res) {
       return res.status(401).json({ message: 'Invalid credentials' });
       //return res.redirect('/login');
     }
-    req.logIn(user, (err) => {
+    // Same code is seen in register controller
+    req.login(user, (err) => {
       req.session.ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
       req.session.userAgent = req.headers['user-agent'];
-      return res.status(200).json({ message: 'Logged in successfully' });
-      //return res.redirect('/dashboard');
+      res.status(201).json({ message: 'Logged in successfully' });
+      // res.redirect('/dashboard');
     });
   })(req, res);
 }
@@ -21,6 +22,7 @@ function googleLogin(req, res) {
 
 function googleCallback(req, res) {
   return passport.authenticate('google', (err, user, info) => {
+    console.log(user);
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
