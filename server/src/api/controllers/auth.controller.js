@@ -22,7 +22,6 @@ function googleLogin(req, res) {
 
 function googleCallback(req, res) {
   return passport.authenticate('google', (err, user, info) => {
-    console.log(user);
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }

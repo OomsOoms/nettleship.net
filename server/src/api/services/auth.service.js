@@ -2,7 +2,6 @@ const { User } = require('../models');
 
 async function handleGoogleStrategy(accessToken, refreshToken, profile, cb) {
   try {
-    return cb(null, true);
     // Check if the user already exists and return it if they do
     const existingUser = await User.findOne({ 'google.id': profile.id });
     if (existingUser) return cb(null, existingUser);
