@@ -7,7 +7,9 @@ const { authController: ac } = require('../controllers');
 router
   .get('/google', ac.googleLogin)
   .get('/google/callback', ac.googleCallback)
-  .get('/logout', ac.logout)
-  .post('/login', ac.localLogin);
+  .post('/logout', ac.logout)
+  .post('/login', ac.localLogin)
+  .get('/status', ac.getStatus)
+  .post('/reset-password', ac.resetPassword);
 
 module.exports = router;

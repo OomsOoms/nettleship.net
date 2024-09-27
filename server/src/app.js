@@ -22,7 +22,6 @@ if (process.env.NODE_ENV === 'production') {
 }
 // Enable CORS for all routes
 app.use(corsMiddleware);
-app.set('trust proxy', 1);
 
 // built-in middleware for json
 app.use(express.json());
@@ -40,23 +39,6 @@ app.use(express.static('public'));
 
 // routes
 require('./api/routes')(app);
-
-app.get('/login', (req, res) => {
-  res.send(`
- <html>
-      <body>
-        <h1>Login</h1>
-        <a href="/api/auth/google">Authenticate with Google</a>
-      </body>
-    </html>
-  `);
-});
-
-app.get('/protected', (req, res) => {
-  if (!req.isAuthenticated()) return res.status(401).json({ message: 'Unauthorized' });
-  res.send(`Hello ${req.user.username}`);
-});
-// req.login() will login a user on signup
 
 // error handling middleware
 app.all('*', (req, res) => {

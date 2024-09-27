@@ -9,11 +9,11 @@ module.exports = session({
     mongoUrl: process.env.DATABASE_URI,
     collectionName: 'sessions',
     ttl: 14 * 24 * 60 * 60,
-    autoRemove: 'native',
+    autoRemove: 'native', //
     stringify: false, // Set stringify option to false to store cookies as objects
   }),
   cookie: {
     maxAge: 1000 * 60 * 60 * 24 * 7,
-    secure: false,
+    secure: process.env.NODE_ENV === 'production', // Set secure to true if in production
   },
 });
