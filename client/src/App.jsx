@@ -1,40 +1,21 @@
-import { useEffect, useState } from 'react'
-
-function App() {
-
-  const [data, setData] = useState(null)
-
-  useEffect(() => {
-
-    const requestBody = {
-      game_id: "gameId",
-      player_name: "username",
-    };
-
-    const options = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestBody),
-    };
+import { UserProvider } from './context/userContext.jsx';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/home";
+import LoginForm from "./features/authentication";
+import './assets/App.css'
 
 
-    fetch('http://localhost:8000/api/create-game', options)
-      .then((response) => {
-        console.log(response)
-        return response.text()
-      })
-      .then((data) => {
-        console.log(data)
-        setData(data)
-      })
-  }, [])
-
+export default function App() {
   return (
-    <div>
-      <h1>My React App!</h1>
-      <p>{data}</p>
-    </div>
-  )
+    <UserProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/">
+            <Route index element={<Home />} />
+            <Route path="login" element={<LoginForm />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </UserProvider>
+  );
 }
-
-export default App
