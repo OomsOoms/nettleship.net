@@ -10,7 +10,7 @@ export const UserProvider = ({ children }) => {
     useEffect(() => {
         const checkAuthStatus = async () => {
             try {
-                const response = await fetch('/api/auth/status', {
+                const response = await fetch('https://api.nettleship.net/api/auth/status', {
                     credentials: 'include', // Include cookies if needed
                 });
                 if (response.ok) {

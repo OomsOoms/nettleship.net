@@ -15,7 +15,7 @@ const Home = () => {
 
     const handleLogout = async () => {
         try {
-            const response = await fetch('/api/auth/logout', {
+            const response = await fetch('https://api.nettleship.net/api/auth/logout', {
                 method: 'POST',
                 credentials: 'include', // Include cookies if needed
             });
