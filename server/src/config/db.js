@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const { logger } = require('../config/logger');
 
 async function connect() {
   let uri;
   if (process.env.NODE_ENV === 'test') {
+    const { MongoMemoryServer } = require('mongodb-memory-server');
     const mongod = await MongoMemoryServer.create();
     uri = mongod.getUri();
   } else {
