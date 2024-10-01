@@ -18,21 +18,14 @@ For detailed API documentation, please refer to the [OpenAPI Specification](./sr
 
 ### Environment Variables
 
-To configure your environment settings, create a `.env` file based on the provided `.env.example`. The default values will work in development without any changes. However, if you're using a non-local MongoDB instance, you'll need to update the `MONGODB_URI` variable.
+To configure your environment settings, create `.env.development` and `.env.production` files based on the provided `.env.example`. If you're using a non-local MongoDB instance, update the `MONGODB_URI` variable accordingly. Additionally, ensure the Google Configuration is set in both environments. The remaining values are suitable for development as is. Note that hCaptcha keys are set to the test keys. For more information, refer to the [hCaptcha documentation](https://docs.hcaptcha.com/#integration-testing-test-keys).
 
-1. Create a `.env` file based on `.env.example`:
+1. Create `.env.development` and `.env.production` files based on `.env.example`:
 
     ```sh
-    cp .env.example .env
+    cp .env.example .env.development
+    cp .env.example .env.production
     ```
-
-2. If using a non-local MongoDB instance, update the `MONGODB_URI` variable in the `.env` file:
-
-    ```
-    MONGODB_URI=your_mongodb_connection_string_here
-    ```
-
-For local development, the default values in the `.env` file should work as-is.
 
 ### Running the Server
 

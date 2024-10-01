@@ -9,6 +9,8 @@ docs/
 
 # Ignore .env files
 .env
+.env.development
+.env.production
 
 # Logs
 logs
@@ -140,3 +142,6 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Sentry Config File
+.env.sentry-build-plugin

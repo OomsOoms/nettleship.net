@@ -10,11 +10,8 @@ const verifyCaptcha = async (req, res, next) => {
     if (data.success === true) {
       next();
     } else {
-      if (process.env.NODE_ENV !== 'production') {
-        next(); // Skip captcha verification in development and testing
-      } else {
-        next(Error.invalidCredentials('Invalid captcha token'));
-      }
+      // In development the test key is used so the captcha will always pass https://docs.hcaptcha.com/#integration-testing-test-keys
+      next(Error.invalidCredentials('Invalid captcha token'));
     }
   });
 };

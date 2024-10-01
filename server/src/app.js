@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` });
 
 const express = require('express');
 const morgan = require('morgan');
@@ -51,9 +51,6 @@ app.use(express.static('public'));
 
 // routes
 require('./api/routes')(app);
-app.get('/debug-sentry', function mainHandler(req, res) {
-  throw new Error('My first Sentry error!');
-});
 
 // error handling middleware
 app.all('*', (req, res) => {
