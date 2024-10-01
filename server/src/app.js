@@ -3,6 +3,8 @@ require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const passport = require('passport');
+const helmet = require('helmet');
+const compression = require('compression');
 
 const corsMiddleware = require('./config/corsOptions');
 const { logger, accessLogStream } = require('./config/logger');
@@ -13,6 +15,9 @@ const { errorHandler, rateLimiter } = require('./api/middlewares');
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+// trust first proxy
+app.set('trust proxy', 1);
+
 // middleware for logging
 if (process.env.NODE_ENV === 'production') {
   app.use(morgan('combined', { stream: accessLogStream })); // file logs only
@@ -20,6 +25,13 @@ if (process.env.NODE_ENV === 'production') {
   // tests and development
   app.use(morgan('dev')); // console logs only
 }
+
+// Enable security-related HTTP headers
+app.use(helmet());
+
+// Enable response compression
+app.use(compression());
+
 // Enable CORS for all routes
 app.use(corsMiddleware);
 
@@ -39,11 +51,16 @@ app.use(express.static('public'));
 
 // routes
 require('./api/routes')(app);
+app.get('/debug-sentry', function mainHandler(req, res) {
+  throw new Error('My first Sentry error!');
+});
 
 // error handling middleware
 app.all('*', (req, res) => {
   res.status(404).json({ message: '404 Route does not exist' });
 });
+
+// error handler middleware
 app.use(errorHandler);
 
 // Connect to server

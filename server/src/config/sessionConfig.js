@@ -1,6 +1,8 @@
 const MongoStore = require('connect-mongo');
 const session = require('express-session');
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 module.exports = session({
   secret: process.env.SESSION_SECRET,
   resave: false,
@@ -14,6 +16,10 @@ module.exports = session({
   }),
   cookie: {
     maxAge: 1000 * 60 * 60 * 24 * 7,
-    secure: process.env.NODE_ENV === 'production', // Set secure to true if in production
+    secure: isProduction,
+    httpOnly: true,
+    sameSite: 'Lax',
+    //domain: process.env.BACKEND_DOMAIN, // dont seem to work
+    //path: '/',
   },
 });

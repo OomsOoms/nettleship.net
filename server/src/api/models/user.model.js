@@ -133,20 +133,25 @@ UserSchema.pre('save', async function (next) {
 
 // Run when a document is saved with await user.save()
 UserSchema.post('save', async function (doc, next) {
+  console.log('post save');
   // Send a welcome email to new google users
   if (doc.google.email && doc.wasNew) {
     console.log('Sending welcome email to new google user');
   }
+
   // Send an email confirmation to new local users
-  if (doc.local.newEmail !== doc.oldDocument.local.newEmail) {
-    doc.sendVerificationEmail();
-    if (doc.local.email) {
-      sendEmail(doc.local.email, 'Email changed', 'emailChanged', {
-        username: doc.username,
-        email: doc.local.newEmail,
-      });
-    }
+  if (doc.local.newEmail && doc.wasNew) {
+    console.log('Sending email confirmation to new local user');
+    sendEmail(doc.local.newEmail, 'Welcome to nettlesip.net', 'verifyEmail', {
+      username: doc.username,
+      email: doc.local.newEmail,
+    });
   }
+
+  // Send an email confirmation when changing email
+  //if (doc.local.newEmail !== doc.oldDocument.local.newEmail) {
+  //  doc.sendVerificationEmail();
+  //}
   next();
 });
 
