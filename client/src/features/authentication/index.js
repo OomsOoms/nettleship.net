@@ -1,2 +1,7 @@
 import LoginForm from './components/LoginForm';
-export default LoginForm;
+import RegisterForm from './components/RegisterForm';
+
+export {
+    LoginForm,
+    RegisterForm,
+};

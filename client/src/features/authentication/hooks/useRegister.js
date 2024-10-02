@@ -1,18 +1,17 @@
 import { useState } from 'react';
-import { login } from '../services/loginService';
+import { register } from '../services/registerService';
 
-export const useLogin = () => {
+export const useRegister = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const handleLogin = async (username, password) => {
+    const handleRegister = async (username, email, password, hCaptchaToken) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await login(username, password);
+            const response = await register(username, email, password, hCaptchaToken);
             if (!response.ok) {
-                console.log(response);
-                return setError('Invalid credentials');
+                return response;
             }
             if (response.ok) {
                 window.location.href = '/';
@@ -24,5 +23,5 @@ export const useLogin = () => {
         }
     };
 
-    return { handleLogin, loading, error };
+    return { handleRegister, loading, error };
 };

@@ -5,7 +5,7 @@ const validateRequest = (req, res, next) => {
   if (!errors.isEmpty()) {
     const error = process.env.NODE_ENV === 'production' ? 'Invalid request parameters' : errors.array();
 
-    res.status(400).json({ message: error });
+    res.status(400).json({ errors: error });
   } else {
     next();
   }

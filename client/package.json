@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@hcaptcha/react-hcaptcha": "^1.11.0",
+    "@mantine/notifications": "^7.13.1",
     "@react-oauth/google": "^0.12.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
