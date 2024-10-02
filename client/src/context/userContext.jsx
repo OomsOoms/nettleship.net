@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
+import axiosInstance from "../utils/axios-instance";
 
 export const UserContext = createContext();
 
@@ -10,18 +11,23 @@ export const UserProvider = ({ children }) => {
     useEffect(() => {
         const checkAuthStatus = async () => {
             try {
-                const response = await fetch('/api/auth/status', {
-                    credentials: 'include', // Include cookies if needed
+                const response = await axiosInstance.get('/api/auth/status', {
+                    withCredentials: true,
                 });
-                if (response.ok) {
-                    const data = await response.json();
+                console.log(response);
+                if (response.status === 200) {
+                    const data = response.data;
                     setUser(data);
-                }
-                if (!response.ok) {
+                } else {
+                    console.log('User:');
                     setUser(null);
                 }
             } catch (error) {
-                console.error('Failed to check auth status:', error);
+                if (error.response.status === 401) {
+                    setUser(null);
+                } else {
+                    console.error('Failed to check auth status');
+                }
             } finally {
                 setLoading(false);
             }

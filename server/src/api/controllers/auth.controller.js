@@ -10,7 +10,7 @@ function localLogin(req, res) {
     req.login(user, (err) => {
       req.session.ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
       req.session.userAgent = req.headers['user-agent'];
-      return res.status(201).json({ message: 'Logged in successfully via local login' });
+      return res.status(200).json({ message: 'Logged in successfully via local login' });
       //return res.redirect(`${process.env.FRONTEND_DOMAIN}/`);
     });
   })(req, res);

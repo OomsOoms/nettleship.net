@@ -1,22 +1,30 @@
+import axiosInstance from "../../../utils/axios-instance";
+
 export const register = async (username, email, password, hCaptchaToken) => {
     try {
-        const response = await fetch('/api/users', {
-            method: 'POST',
+        const response = await axiosInstance.post('/api/users', {
+            username,
+            email,
+            password,
+            hCaptchaToken
+        }, {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username, email, password, hCaptchaToken }),
-            credentials: 'include' // Include credentials (cookies)
+            withCredentials: true
         });
 
-        if (response.ok) {
-            return { ok: true, message: 'Registration successful' };
+        if (response.status === 201) {
+            window.location.href = '/';
         } else {
-            const data = await response.json();
-            return { ok: false, errors: data.errors };
+            return response.data;
         }
     } catch (error) {
-        console.error('There was a problem with the fetch operation:', error);
-        return { ok: false, errors: [{ path: 'server', msg: 'Server error' }] };
+        console.error('There was a problem with the axios operation:', error);
+        if (error.response) {
+            return { ok: false, errors: error.response.data.errors };
+        } else {
+            return { ok: false, errors: [{ path: 'server', msg: 'Server error' }] };
+        }
     }
 };

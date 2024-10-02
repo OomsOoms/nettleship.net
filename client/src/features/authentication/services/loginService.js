@@ -1,22 +1,28 @@
+import axiosInstance from "../../../utils/axios-instance";
+
 export const login = async (username, password) => {
     try {
-        const response = await fetch('/api/auth/login', {
-            method: 'POST',
+        const response = await axiosInstance.post('/api/auth/login', {
+            username,
+            password
+        }, {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username, password }),
-            credentials: 'include' // Include credentials (cookies)
+            withCredentials: true
         });
-
-        if (response.ok) {
+        console.log(response.status);
+        if (response.status === 200) {
             window.location.href = '/';
         } else {
-            const data = await response.json();
-            return data;
+            return response.data;
         }
     } catch (error) {
-        console.error('There was a problem with the fetch operation:', error);
-        throw error;
+        console.error('There was a problem with the axios operation:', error);
+        if (error.response) {
+            return error.response.data;
+        } else {
+            throw error;
+        }
     }
 };

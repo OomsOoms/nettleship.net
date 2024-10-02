@@ -2,6 +2,8 @@
 import { useContext } from 'react';
 import { UserContext } from '../context/userContext';
 
+import axiosInstance from '../utils/axios-instance';
+
 const Home = () => {
     const { user, loading } = useContext(UserContext);
 
@@ -15,12 +17,11 @@ const Home = () => {
 
     const handleLogout = async () => {
         try {
-            const response = await fetch('/api/auth/logout', {
-                method: 'POST',
-                credentials: 'include', // Include cookies if needed
+            const response = await axiosInstance.post('/api/auth/logout', {}, {
+                withCredentials: true,
             });
 
-            if (response.ok) {
+            if (response.status === 200) {
                 console.log('Logout successful');
                 window.location.href = '/login';
             } else {
