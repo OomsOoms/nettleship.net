@@ -5,7 +5,7 @@ const Captcha = ({ show, onToken }) => {
     if (!show) {
         return null;
     }
-
+ 
     return (
         <>
             <HCaptcha
