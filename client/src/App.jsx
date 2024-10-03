@@ -1,7 +1,8 @@
 import { UserProvider } from './context/userContext.jsx';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
-import { RegisterForm, LoginForm } from "./features/authentication";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import './assets/App.css'
 
 
@@ -12,8 +13,8 @@ export default function App() {
         <Routes>
           <Route path="/">
             <Route index element={<Home />} />
-            <Route path="login" element={<LoginForm />} />
-            <Route path="register" element={<RegisterForm />} />
+            <Route path="login" element={<LoginPage />} />
+            <Route path="register" element={<RegisterPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

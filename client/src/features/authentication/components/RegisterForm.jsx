@@ -1,27 +1,36 @@
 import { useContext, useState } from 'react';
 
 import Captcha from '../../../components/ui/Captcha.jsx';
+
 import { UserContext } from '../../../context/userContext.jsx';
 import { useRegister } from '../hooks/useRegister.js';
-import validator from 'validator';
+import { emailValidations, passwordValidations, usernameValidations } from '../validations/registerValidations.js';
+
 
 const RegisterForm = () => {
-    const { user, loading } = useContext(UserContext);
+    // User context
+    const { user, loading: userContextLoading } = useContext(UserContext);
+
+    // Register service
+    const { handleRegister, loading: registerLoading, error } = useRegister();
+    
+    // Form state
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [captchaToken, setCaptchaToken] = useState('');
-    const { handleRegister, loading: registerLoading, error } = useRegister();
 
+    // Form validation
     const [usernameError, setUsernameError] = useState('');
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
-
+    
     const handleUsernameChange = (e) => {
-        const username = e.target.value;
+        const username = e.target.value.toLowerCase();
         setUsername(username);
         setUsernameError(usernameValidations(username));
     }
+
     const handleEmailChange = (e) => {
         const email = e.target.value;
         setEmail(email);
@@ -32,58 +41,26 @@ const RegisterForm = () => {
         setPassword(password);
         setPasswordError(passwordValidations(password));
     };
-    // TODO: make functions for each input field and move validations to another file
-    const usernameValidations = (username) => {
-        if (!validator.isLength(username, { min: 3 })) {
-            return 'Username is too short'
-        } else if (!validator.isLength(username, { max: 20 })) {
-            return 'Username is too long'
-        } else if (!validator.matches(username, /^[a-z0-9_.-]+$/)) {
-            return 'Username must contain only letters, numbers, and ._-'
-        }
-    }
-    const emailValidations = (email) => {
-        if (!validator.isEmail(email)) {
-            return 'Invalid email';
-        }
-    }
-    const passwordValidations = (password) => {
-        if (!validator.isLength(password, { min: 8 })) {
-            return 'Password is too short';
-        } else if (!/[a-z]/.test(password)) {
-            return 'Password must contain a lowercase letter';
-        } else if (!/[A-Z]/.test(password)) {
-            return 'Password must contain a capital letter';
-        } else if (!/\d/.test(password)) {
-            return 'Password must contain a number';
-        }
-    }
+
     const onSubmit = (e) => {
         e.preventDefault(); // Prevent the default form submission
-        if (!username) {
-            setUsernameError('Username is required');
+        setUsernameError(usernameValidations(username));
+        setEmailError(emailValidations(email));
+        setPasswordError(passwordValidations(password));
+
+        if (usernameValidations(username) || emailValidations(email) || passwordValidations(password) || !captchaToken) {
+            console.log('Form has errors');
             return;
         }
-        if (!email) {
-            setEmailError('Email is required');
-            return;
-        }
-        if (!password) {
-            setPasswordError('Password is required');
-            return;
-        }
-        if (!captchaToken) {
-            alert('Please complete the captcha');
-            return;
-        }
+        console.log('Form is valid');
         const result = handleRegister(username, email, password, captchaToken);
-        // Reload captcha on fail
+        // Reload captcha on egister fail
         if (result !== 201) {
             console.log('reset captcha')
         }
     }
 
-    if (loading) {
+    if (userContextLoading) {
         return <div>Loading...</div>;
     }
 
@@ -94,34 +71,38 @@ const RegisterForm = () => {
     return (
         <form onSubmit={onSubmit}>
             <div>
-                <label htmlFor="username">Username:</label>
                 <input
+                    htmlFor="username"
+                    placeholder='Username'
                     type="text"
                     id="username"
                     value={username}
                     onChange={handleUsernameChange}
+                    //onBlur={() => checkUsernameAvailability(username)} // possibly check username availability while typing or on blur
                 />
-                {usernameError && <div>{usernameError}</div>}
+                <div className="error-message">{usernameError || '\u00A0'}</div> {/* Non-breaking space */}            
             </div>
             <div>
-                <label htmlFor="email">Email:</label>
                 <input
+                    htmlFor="email"
+                    placeholder='Email'
                     type="email"
                     id="email"
                     value={email}
                     onChange={handleEmailChange}
                 />
-                {emailError && <div>{emailError}</div>}
+                <div className="error-message">{emailError || '\u00A0'}</div> {/* Non-breaking space */}           
             </div>
             <div>
-                <label htmlFor="password">Password:</label>
                 <input
+                    htmlFor="password"
+                    placeholder='Password'
                     type="password"
                     id="password"
                     value={password}
                     onChange={handlePasswordChange}
                 />
-                {passwordError && <div>{passwordError}</div>}
+                <div className="error-message">{passwordError || '\u00A0'}</div> {/* Non-breaking space */}
             </div>
             <Captcha show={true} onToken={setCaptchaToken} />
             <button type="submit" disabled={registerLoading}>

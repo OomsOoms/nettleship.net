@@ -13,18 +13,13 @@ export const register = async (username, email, password, hCaptchaToken) => {
             },
             withCredentials: true
         });
-
-        if (response.status === 201) {
-            window.location.href = '/';
-        } else {
-            return response.data;
-        }
+        return response;
     } catch (error) {
-        console.error('There was a problem with the axios operation:', error);
-        if (error.response) {
-            return { ok: false, errors: error.response.data.errors };
+        if (error.response && error.response.status >= 400 && error.response.status < 500) {
+            return error.response;
         } else {
-            return { ok: false, errors: [{ path: 'server', msg: 'Server error' }] };
+            console.error('Server error or network issue:', error);
         }
+        console.error('There was a problem with the register user axios operation:');
     }
 };
