@@ -23,13 +23,14 @@ function googleLogin(req, res) {
 function googleCallback(req, res) {
   return passport.authenticate('google', (err, user) => {
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      //return res.status(401).json({ message: 'Invalid credentials' });
+      return res.redirect(`${process.env.FRONTEND_DOMAIN}/login?error=google`);
     }
     req.logIn(user, (err) => {
       req.session.ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
       req.session.userAgent = req.headers['user-agent'];
-      return res.status(200).json({ message: 'Logged in successfully via google' });
-      //return res.redirect(`${process.env.FRONTEND_DOMAIN}/`);
+      //return res.status(200).json({ message: 'Logged in successfully via google' });
+      return res.redirect(`${process.env.FRONTEND_DOMAIN}/`);
     });
   })(req, res);
 }
