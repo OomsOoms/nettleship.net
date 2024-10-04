@@ -18,7 +18,7 @@ module.exports = session({
     maxAge: 1000 * 60 * 60 * 24 * 7,
     secure: isProduction,
     httpOnly: true,
-    sameSite: 'Lax',
+    sameSite: 'none',
     //domain: process.env.BACKEND_DOMAIN, // dont seem to work
     //path: '/',
   },
