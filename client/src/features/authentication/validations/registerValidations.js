@@ -1,9 +1,7 @@
 import validator from 'validator';
 
 const usernameValidations = (username) => {
-    if (!username) {
-        return 'Username is required'
-    } else if (!validator.isLength(username, { min: 3 })) {
+    if (!validator.isLength(username, { min: 3 })) {
         return 'Username is too short'
     } else if (!validator.isLength(username, { max: 20 })) {
         return 'Username is too long'
@@ -15,17 +13,13 @@ const usernameValidations = (username) => {
 }
 
 const emailValidations = (email) => {
-    if (!email) {
-        return 'Email is required';
-    } else if (!validator.isEmail(email)) {
+    if (!validator.isEmail(email)) {
         return 'Invalid email';
     }
 }
 
 const passwordValidations = (password) => {
-    if (!password) {
-        return 'Password is required';
-    } else if (!validator.isLength(password, { min: 8 })) {
+    if (!validator.isLength(password, { min: 8 })) {
         return 'Password is too short';
     } else if (!/[a-z]/.test(password)) {
         return 'Password must contain a lowercase letter';
@@ -36,8 +30,15 @@ const passwordValidations = (password) => {
     }
 }
 
+const confirmPasswordValidations = (password, confirmPassword) => {
+    if (password !== confirmPassword) {
+        return 'Passwords do not match';
+    }
+}
+
 export {
     usernameValidations,
     emailValidations,
-    passwordValidations
+    passwordValidations,
+    confirmPasswordValidations
 };

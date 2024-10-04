@@ -1,18 +1,16 @@
-import { useContext, useState, useRef } from 'react';
-
+import { useState, useRef, useEffect, useCallback } from 'react';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 
-import { UserContext } from '../../../context/userContext.jsx';
+import axiosInstance from "../../../utils/axios-instance";
+
+
 import { useRegister } from '../hooks/useRegister.js';
-import { emailValidations, passwordValidations, usernameValidations } from '../validations/registerValidations.js';
+import { usernameValidations, emailValidations, passwordValidations, confirmPasswordValidations } from '../validations/registerValidations.js';
 
 
 const RegisterForm = () => {
-    // User context
-    const { user, loading: userContextLoading } = useContext(UserContext);
-
     // Register service
-    const { handleRegister, loading: registerLoading, error } = useRegister();
+    const { handleRegister, loading: registerLoading } = useRegister();
     
     // Form state
     const [username, setUsername] = useState('');
@@ -21,142 +19,181 @@ const RegisterForm = () => {
     const [captchaToken, setCaptchaToken] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const captchaRef = useRef(null);
-
-    // Form validation
-    const [usernameError, setUsernameError] = useState('');
-    const [emailError, setEmailError] = useState('');
-    const [passwordError, setPasswordError] = useState('');
-    const [confirmPasswordError, setConfirmPasswordError] = useState('');
+    const [isFormValid, setIsFormValid] = useState(false);
     
-    const handleUsernameChange = (e) => {
-        const username = e.target.value.toLowerCase();
-        setUsername(username);
-        setUsernameError(usernameValidations(username));
-    }
+    // Form labels
+    const [usernameLabel, setUsernameLabel] = useState('Username');
+    const [emailLabel, setEmailLabel] = useState('Email');
+    const [passwordLabel, setPasswordLabel] = useState('Password');
+    const [confirmPasswordLabel, setConfirmPasswordLabel] = useState('Confirm Password');
+    
+
+    
+
+    const handleInputChange = (e, setInputValue, setLabel, inputValidations, defaultLabel = 'Input') => {
+        // Set the input value to the value of the input field
+        let inputValue = e.target.value;
+        if (setInputValue === setUsername) {
+            inputValue = inputValue.toLowerCase();
+        }
+        setInputValue(inputValue);
+
+        if (!inputValue) {
+            setLabel(defaultLabel);
+            return;
+        }
+
+        const validationMessage = inputValidations(inputValue, password); // password is passed in for confirmPasswordValidations and ignored in the rest
+        if (validationMessage) {
+            setLabel(<span style={{ color: 'red', fontStyle: 'italic' }}>{validationMessage}</span>);
+            return;
+        }
+
+        setLabel(defaultLabel);
+    };
+
+    const [lastUsernameChange, setLastUsernameChange] = useState(0);
+    const [usernameAvailable, setUsernameAvailable] = useState(false);
+
+    useEffect(() => {
+        const checkUsernameAvailability = async () => {
+            if (usernameValidations(username)) return;
+            if (username.trim() !== '' && Date.now() - lastUsernameChange >= 1000) {
+                try {
+                    const response = await axiosInstance.get(`/api/users/${username}?check=true`);
+                    if (response.status === 200) {
+                        setUsernameLabel(<span style={{ color: 'red', fontStyle: 'italic' }}>Username not available</span>);
+                    }
+                } catch (error) {
+                    if (error.status === 404) {
+                        setUsernameAvailable(true);
+                        setUsernameLabel('Username');
+                    }
+                }
+            }
+        };
+        
+        const timerId = setTimeout(checkUsernameAvailability, 1000);
+        
+        return () => clearTimeout(timerId);
+    }, [username, lastUsernameChange]);
+    
+    const handleUsernameChange = useCallback((e) => {
+        handleInputChange(e, setUsername, setUsernameLabel, usernameValidations, 'Username');
+        setUsernameAvailable(false);
+        setLastUsernameChange(Date.now());
+        setUsername(e.target.value.toLowerCase());
+    }, []);
 
     const handleEmailChange = (e) => {
-        const email = e.target.value;
-        setEmail(email);
-        setEmailError(emailValidations(email));
-    }
+        handleInputChange(e, setEmail, setEmailLabel, emailValidations, 'Email');
+    };
+
     const handlePasswordChange = (e) => {
-        const password = e.target.value;
-        setPassword(password);
-        setPasswordError(passwordValidations(password));
+        handleInputChange(e, setPassword, setPasswordLabel, passwordValidations, 'Password');
     };
 
     const handleConfirmPasswordChange = (e) => {
-        const confirmPassword = e.target.value;
-       setConfirmPassword(confirmPassword);
-       setConfirmPasswordError(password !== confirmPassword ? 'Passwords do not match' : '');
-    }
+        handleInputChange(e, setConfirmPassword, setConfirmPasswordLabel, confirmPasswordValidations, 'Confirm Password');
+    };
 
     const handleCaptchaChange = (token) => {
         setCaptchaToken(token);
     };
+    useEffect(() => {
+        validateForm();
+    }, [username, password, confirmPassword, captchaToken, usernameAvailable]); // when a value changes, validate the form
 
-    const onSubmit = (e) => {
-        e.preventDefault(); // Prevent the default form submission
-        setUsernameError(usernameValidations(username));
-        setEmailError(emailValidations(email));
-        setPasswordError(passwordValidations(password));
-        setConfirmPasswordError(password !== confirmPassword ? 'Passwords do not match' : '');
+    const validateForm = () => {
+        const isUsernameValid = !usernameValidations(username);
+        const isEmailValid = !emailValidations(email);
+        const isPasswordValid = !passwordValidations(password);
+        const isConfirmPasswordValid = !confirmPasswordValidations(password, confirmPassword);
+        const isCaptchaValid = !!captchaToken;
 
-        if (
-            usernameValidations(username) ||
-            emailValidations(email) ||
-            passwordValidations(password) ||
-            setConfirmPasswordError(password !== confirmPassword ? 'Passwords do not match' : '') ||
-            !captchaToken
-        ) return;
+        setIsFormValid(isUsernameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid && isCaptchaValid && usernameAvailable);
+    };
 
-        handleRegister(username, email, password, captchaToken);
-        
-        if (error) {
-            captchaRef.current.resetCaptcha()
-            switch (error) {
-                case 'Username already exists':
-                    setUsernameError('Username already exists');
-                    break;
-                case 'Email already exists':
-                    setEmailError('Email already exists');
-                    break;
-                default:
-                    break;
+    const onSubmit = async (e) => {
+        e.preventDefault();
+        // Perform registration logic here
+        if (isFormValid) {
+            const registerResult = await handleRegister(username, email, password, captchaToken);
+            if (registerResult?.status === 201) {
+                window.location.href = '/';
+            } else if (registerResult?.status === 409) {
+                captchaRef.current.resetCaptcha();
+                // assumed to be email conflict as username is already checked
+                setEmailLabel(<span style={{ color: 'red', fontStyle: 'italic' }}>Email already exists</span>);
             }
         }
     }
 
-    if (userContextLoading) {
-        return <div>Loading...</div>;
-    }
-
-    if (user) {
-        window.location.href = '/';
-    }
-
     return (
         <form onSubmit={onSubmit}>
-            <div>
-                <label>Username</label><br/>
+            <div className="input-box">
                 <input
                     htmlFor="username"
-                    placeholder='Username'
+                    placeholder=" "
                     type="text"
                     id="username"
                     value={username}
                     onChange={handleUsernameChange}
-                    //onBlur={() => checkUsernameAvailability(username)} // possibly check username availability while typing or on blur
                 />
-                <div className="error-message">{usernameError || '\u00A0'}</div> {/* Non-breaking space */}            
+                <label htmlFor="username">{usernameLabel}</label>
             </div>
             <div>
-                <label>Email</label><br/>
-                <input
-                    htmlFor="email"
-                    placeholder='Email'
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={handleEmailChange}
-                />
-                <div className="error-message">{emailError || '\u00A0'}</div> {/* Non-breaking space */}           
+                <div className="input-box">
+                    <input
+                        htmlFor="email"
+                        placeholder=" "
+                        type="email"
+                        id="email"
+                        value={email}
+                        onChange={handleEmailChange}
+                    />
+                    <label htmlFor="email">{emailLabel}</label>
+                </div>
+                
             </div>
             <div>
-                <label>Password</label><br/>
+                <div className="input-box">
                 <input
                     htmlFor="password"
-                    placeholder='Password'
-                    type="password"
+                    placeholder=" "
+                        type="password"
                     id="password"
                     value={password}
                     onChange={handlePasswordChange}
-                />
-                <div className="error-message">{passwordError || '\u00A0'}</div> {/* Non-breaking space */}
+                    />
+                    <label htmlFor="password">{passwordLabel}</label>
+                </div>
             </div>
             <div>
-                <label>Confirm Password</label><br/>
-                <input
-                    htmlFor="confirm-password"
-                    placeholder='Confirm Password'
-                    type="password"
-                    id="confirm-password"
-                    value={confirmPassword}
-                    onChange={handleConfirmPasswordChange}
-                />
-                <div className="error-message">{confirmPasswordError || '\u00A0'}</div> {/* Non-breaking space */}
+                <div className="input-box">
+                    <input
+                        htmlFor="confirm-password"
+                        placeholder=" "
+                        type="password"
+                        id="confirm-password"
+                        value={confirmPassword}
+                        onChange={handleConfirmPasswordChange}
+                    />
+                    <label htmlFor="confirm-password">{confirmPasswordLabel}</label>
+                </div>
+                
             </div>
             <div>
                 <HCaptcha
                     ref={captchaRef}
-                    sitekey={import.meta.env.MODE === 'development'
-                        ? '10000000-ffff-ffff-ffff-000000000001'
-                        : '798876a4-47b6-480a-b92c-45bedfc45272'}
+                    sitekey={import.meta.env.MODE === "development"
+                        ? "10000000-ffff-ffff-ffff-000000000001"
+                        : "798876a4-47b6-480a-b92c-45bedfc45272"}
                     onVerify={handleCaptchaChange}
                 />
             </div>
-            <button type="submit" disabled={registerLoading}>
-                {registerLoading ? 'Signing up...' : 'Register'}
+            <button type="submit" disabled={!isFormValid || registerLoading}>
+                {registerLoading ? "Creating account..." : "Create account"}
             </button>
         </form>
     );

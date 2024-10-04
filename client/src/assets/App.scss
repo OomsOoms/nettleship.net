@@ -1,0 +1,127 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.form-container {
+  padding: 0 20px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-sizing: border-box;
+
+  h1 {
+    font-size: 1.5em;
+  }
+
+  .input-box {
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    margin-bottom: 0px; // Increase margin for better spacing
+    text-align: left;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box; // Ensure padding and border are included in the element's total width and height
+
+    input {
+      color: #000000;
+      width: 100%;
+      padding-top: 10px; // Add padding to the input
+      border: none;
+      outline: none;
+      background-color: transparent;
+      font-size: 1em;
+      box-sizing: border-box; // Ensure padding is included in the element's total width
+    }
+
+    label {
+      position: absolute;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      font-size: 1em;
+      color: #888;
+      transition: all 0.2s ease-in-out;
+      pointer-events: none;
+    }
+
+    input:focus+label,
+    input:not(:placeholder-shown)+label {
+      top: 5px; // Adjust this value to move the label up less
+      left: 10px;
+      font-size: 0.8em;
+      color: #555;
+      transform: translateY(0); // Adjust this value to move the label up less
+    }
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 5px 0;
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #ccc;
+    }
+
+    &::before {
+      margin-right: 10px;
+    }
+
+    &::after {
+      margin-left: 10px;
+    }
+
+    span {
+      padding: 0 10px;
+      color: #000000;
+    }
+  }
+}

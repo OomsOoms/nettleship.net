@@ -9,15 +9,7 @@ export const useRegister = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await register(username, email, password, hCaptchaToken);
-            if (response.status === 409) { // Username or email confict
-                setError(response.data.message);
-            } else if (response.status === 201) {
-                window.location.href = '/';
-            } else {
-                // Handle other errors like server errors or bad request errors
-                setError('An error occurred');
-            }
+            return await register(username, email, password, hCaptchaToken);
         } catch (err) {
             setError(err.message); // These errors will be network errors or server errors
         } finally {

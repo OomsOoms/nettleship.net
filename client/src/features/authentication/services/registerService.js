@@ -15,11 +15,6 @@ export const register = async (username, email, password, hCaptchaToken) => {
         });
         return response;
     } catch (error) {
-        if (error.response && error.response.status >= 400 && error.response.status < 500) {
-            return error.response;
-        } else {
-            console.error('Server error or network issue:', error);
-        }
-        console.error('There was a problem with the register user axios operation:');
+        return error.response;
     }
 };
