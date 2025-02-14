@@ -13,7 +13,7 @@ const sessionConfig = require('./config/sessionConfig');
 const { errorHandler, rateLimiter } = require('./api/middlewares');
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 3000;
 
 // trust first proxy
 app.set('trust proxy', 1);

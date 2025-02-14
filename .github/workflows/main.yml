@@ -1,0 +1,28 @@
+name: Node.js CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: self-hosted  # Uses your self-hosted runner on the Swarm manager
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create env file in /server
+        run: |
+          mkdir -p server
+          touch server/.env
+          echo DATABASE_URI=${{ vars.DATABASE_URI }} >> server/.env
+          cat server/.env  # Verify the file is created
+
+      - name: Build Docker image
+        run: docker build -t nettleship-net-api:latest -f server/Dockerfile server
+
+      - name: Deploy to Docker Swarm
+        run: |
+          # Deploy to Swarm
+          docker stack deploy -c docker-compose.yml nettleship-net-api

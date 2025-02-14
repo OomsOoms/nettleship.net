@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  nettleship-net-api:
+    image: nettleship-net-api:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+      placement:
+        constraints:
+          - node.role == manager # This ensures the service runs only on the manager node (pi-1)
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./logs:/usr/src/app/logs
