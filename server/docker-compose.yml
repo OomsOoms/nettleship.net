@@ -14,5 +14,3 @@ services:
       - .env.production
     ports:
       - "3000:3000"
-    volumes:
-      - ./logs:/usr/src/app/logs
