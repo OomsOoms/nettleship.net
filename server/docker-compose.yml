@@ -10,6 +10,8 @@ services:
       placement:
         constraints:
           - node.role == manager # This ensures the service runs only on the manager node (pi-1)
+    env_file:
+      - /server/.env.production
     ports:
       - "3000:3000"
     volumes:
