@@ -21,4 +21,4 @@ jobs:
       - name: Deploy to Docker Swarm
         run: |
           # Deploy to Swarm
-          docker stack deploy -c docker-compose.yml nettleship-net-api
+          docker stack deploy -c server/docker-compose.yml nettleship-net-api
