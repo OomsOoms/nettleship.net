@@ -18,6 +18,10 @@ jobs:
       - name: Build Docker image
         run: docker build -t nettleship-net-api:latest -f server/Dockerfile server
 
+  deploy:
+    runs-on: self-hosted  # Same self-hosted runner or different one
+    needs: build  # Ensures this job runs only after the build job is successful
+    steps:
       - name: Deploy to Docker Swarm
         run: |
           # Deploy to Swarm
