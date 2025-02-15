@@ -52,6 +52,11 @@ app.use(express.static('public'));
 // routes
 require('./api/routes')(app);
 
+// server status route, useful for monitoring services
+app.get('/api/status', (req, res) => {
+  res.status(200).json({ status: 'Server is running' });
+});
+
 // error handling middleware
 app.all('*', (req, res) => {
   res.status(404).json({ message: '404 Route does not exist' });
