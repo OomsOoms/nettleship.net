@@ -13,6 +13,8 @@ FROM node:${NODE_VERSION}-alpine
 # Use production node environment by default.
 ENV NODE_ENV production
 
+# Create logs directory and set appropriate permissions
+RUN mkdir -p /usr/src/app/logs && chown -R node:node /usr/src/app/logs && chmod -R 755 /usr/src/app/logs
 
 WORKDIR /usr/src/app
 
