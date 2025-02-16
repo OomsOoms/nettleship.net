@@ -14,3 +14,10 @@ services:
       - .env.production
     ports:
       - "3000:3000"
+    networks:
+      - cloudflare-network
+
+networks:
+  cloudflare-network:
+    driver: overlay
+    external: true
