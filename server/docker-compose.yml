@@ -12,12 +12,9 @@ services:
           - node.role == manager # This ensures the service runs only on the manager node (pi-1)
     env_file:
       - .env.production
-    ports:
-      - "3000:3000"
     networks:
-      - cloudflare-network
+      - global-network
 
 networks:
-  cloudflare-network:
-    driver: overlay
+  global-network:
     external: true
