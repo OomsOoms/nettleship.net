@@ -6,7 +6,7 @@ services:
     deploy:
       replicas: 1
       restart_policy:
-        condition: none
+        condition: any
       placement:
         constraints:
           - node.role == manager # This ensures the service runs only on the manager node (pi-1)
