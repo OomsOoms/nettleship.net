@@ -15,7 +15,7 @@ services:
     networks:
       - global-network
     volumes:
-      - ~/nettleship-net/logs:/usr/src/app/logs
+      - ~/logs/nettleship-net:/usr/src/app/logs
 
 networks:
   global-network:
