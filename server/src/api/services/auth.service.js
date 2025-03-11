@@ -100,7 +100,7 @@ async function requestResetPassword(email) {
     const link = `${process.env.FRONTEND_DOMAIN}/reset-password?token=${token}`;
 
     // send the password reset email
-    await sendEmail(email, 'Password Reset', 'resetPassword', { link });
+    await sendEmail(email, 'resetPassword', { link });
   }
   // Send a generic message to prevent user enumeration
   return 'Password reset email sent';
