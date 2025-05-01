@@ -6,3 +6,7 @@ logs
 .env
 # Ignore git directory
 .git
+
+**/bin
+**/obj
+**/node_modules
