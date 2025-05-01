@@ -1,0 +1,152 @@
+.game {
+    width: 100%;
+    max-height: 80vh;
+    background-color: #166534; // green-900
+    border-radius: 1.5rem;
+    overflow: hidden;
+
+    .loading {
+        color: white;
+    }
+
+    .direction-indicator {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.5rem;
+        background-color: rgba(30, 41, 59, 0.8); // slate-800 with opacity
+        border-radius: 9999px;
+        padding: 0.5rem;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .direction-text {
+            font-size: 0.75rem;
+
+            @media (min-width: 768px) {
+                font-size: 0.875rem;
+            }
+        }
+
+        .direction-icon {
+            height: 1rem;
+            width: 1rem;
+
+            @media (min-width: 768px) {
+                height: 1.25rem;
+                width: 1.25rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            top: 1rem;
+            left: 1rem;
+        }
+    }
+
+    .message {
+        position: absolute;
+        top: 0.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(30, 41, 59, 0.9); // slate-800 with opacity
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+
+        @media (min-width: 768px) {
+            font-size: 1rem;
+        }
+    }
+
+    .card-piles {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        @media (min-width: 768px) {
+            gap: 1.5rem;
+        }
+
+        .discard-pile,
+        .draw-pile {
+            cursor: pointer;
+        }
+    }
+
+    .other-player-container {
+        position: absolute;
+    }
+
+    .player-hand-container {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-bottom: 1rem;
+        width: 100%;
+        max-width: 48rem;
+    }
+
+    .modal-overlay {
+        position: absolute;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    // Add styles for the Call UNO button
+    .call-uno-button {
+        position: absolute;
+        top: -60px;
+        right: 20px;
+        background-color: #e11d48; // rose-600
+        color: white;
+        font-weight: bold;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 9999px;
+        cursor: pointer;
+        font-size: 1.125rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        animation: pulse 2s infinite;
+        z-index: 100;
+
+        &:hover {
+            background-color: #be123c; // rose-700
+            transform: scale(1.05);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7);
+            }
+
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(225, 29, 72, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(225, 29, 72, 0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            top: -50px;
+            right: 10px;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+    }
+}

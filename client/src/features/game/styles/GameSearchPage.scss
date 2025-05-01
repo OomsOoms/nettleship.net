@@ -1,0 +1,80 @@
+.game-search-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 60px auto 0;
+    padding: 0 8px; // Reduced padding on mobile
+    box-sizing: border-box;
+
+    @media (min-width: 768px) {
+        padding: 0 16px; // Keep original padding on desktop
+    }
+
+    .header-section {
+        position: sticky;
+        top: 60px; // adjust for nav bar
+        z-index: 900;
+        background-color: #242424; // Match your root background color
+        padding-bottom: 16px;
+        width: 100%;
+        box-sizing: border-box;
+
+        .controls-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 16px 0;
+            width: 100%;
+            max-width: 100%; // Ensure it doesn't exceed container width
+
+            @media (min-width: 768px) {
+                flex-direction: row;
+                align-items: center;
+            }
+
+            .input-field {
+                flex: 1;
+                min-width: 100px;
+                width: 100%;
+            }
+
+            .button-container {
+                display: flex;
+                gap: 8px;
+                width: 100%;
+
+                @media (min-width: 768px) {
+                    width: auto;
+                }
+
+                .button {
+                    flex: 1;
+                    padding: 0 16px;
+                    width: auto; // Override the width to auto
+
+                    @media (min-width: 768px) {
+                        flex: 0 0 auto;
+                        margin-left: 16px;
+                    }
+                }
+            }
+        }
+    }
+
+    .content-section {
+        width: 100%;
+
+        .table-container {
+            margin-top: 16px;
+            width: 100%;
+            overflow-x: auto;
+        }
+    }
+}
+
+// Override body styles for this page
+body.game-search-page {
+    display: block; // Override the flex display
+    align-items: initial;
+    justify-content: initial;
+    overflow-x: auto; // Allow horizontal scrolling for tables on small screens
+}

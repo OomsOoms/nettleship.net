@@ -1,0 +1,88 @@
+@use '../../../index.scss' as vars;
+
+.setting-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+
+    .select--disabled {
+        opacity: 0.5;
+        pointer-events: none; // Prevent interaction
+    }
+
+    .select__trigger:disabled {
+        cursor: not-allowed;
+    }
+
+    &--mobile {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+    }
+
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    &__icon {
+        font-size: 1.5rem;
+        margin-top: 0.25rem;
+
+        .setting-item--mobile & {
+            margin-top: 0;
+        }
+    }
+
+    &__content {
+        flex: 1;
+    }
+
+    &__title {
+        color: vars.$colour-text;
+        font-weight: bold;
+
+        .setting-item--mobile & {
+            font-size: 0.875rem;
+        }
+    }
+
+    &__description {
+        font-size: 0.875rem;
+        color: rgba(vars.$colour-text, 0.75);
+    }
+
+    &__toggle {
+        display: flex;
+        gap: 0.5rem;
+        width: 12rem;
+
+        .setting-item--mobile & {
+            gap: 0.25rem;
+        }
+    }
+
+    &__toggle-btn {
+        &--off {
+            background-color: vars.$colour-primary-dark;
+            color: vars.$colour-text;
+            font-weight: bold;
+        }
+
+        &--on {
+            background-color: vars.$colour-primary;
+            color: vars.$colour-text;
+            font-weight: bold;
+        }
+    }
+
+    &__select {
+        width: 12rem;
+
+        .setting-item--mobile & {
+            width: 12rem;
+        }
+    }
+}

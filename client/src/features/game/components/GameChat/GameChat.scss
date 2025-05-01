@@ -1,0 +1,213 @@
+@use '../../../../index.scss' as vars;
+
+.game-chat {
+    position: fixed;
+    left: vars.$spacing-sm;
+    bottom: vars.$spacing-sm;
+    z-index: 40;
+    width: 320px;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+
+    @media (min-width: 768px) {
+        width: 384px;
+    }
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: vars.$colour-primary;
+    border: 1px solid vars.$colour-secondary;
+    border-bottom: none;
+    border-radius: vars.$border-radius-md vars.$border-radius-md 0 0;
+    padding: vars.$spacing-xs vars.$spacing-sm;
+    color: vars.$colour-text;
+    font-size: vars.$font-size-sm;
+    font-weight: vars.$font-weight-medium;
+}
+
+.hide-chat-button {
+    background: none;
+    border: none;
+    color: vars.$colour-text;
+    opacity: 0.7;
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.messages-container {
+    position: relative;
+    background-color: vars.$colour-primary;
+    border: 1px solid vars.$colour-secondary;
+    border-radius: 0 0 vars.$border-radius-md vars.$border-radius-md;
+    padding: vars.$spacing-xs;
+    margin-bottom: vars.$spacing-xs;
+    overflow-y: auto;
+    max-height: 50vh;
+}
+
+// Update the recent-messages-container styling to better handle multiple messages
+.recent-messages-container {
+    position: relative;
+    background-color: rgba(vars.$colour-primary, 0.9);
+    border: 1px solid vars.$colour-secondary;
+    border-radius: vars.$border-radius-md;
+    padding: vars.$spacing-xs vars.$spacing-sm;
+    margin-bottom: vars.$spacing-xs;
+    max-width: 90%;
+    max-height: 30vh;
+    overflow-y: auto;
+    align-self: flex-start;
+}
+
+// Fade overlay for top messages
+.fade-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(to bottom, vars.$colour-primary, transparent);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.empty-message {
+    color: vars.$colour-text;
+    font-size: vars.$font-size-sm;
+    font-style: italic;
+    opacity: 0.7;
+}
+
+.messages {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-xs;
+    position: relative;
+    z-index: 1;
+}
+
+.message {
+    font-size: vars.$font-size-sm;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+// Update the recent-message styling
+.recent-message {
+    animation: fadeIn 0.3s ease-in-out;
+    margin-bottom: vars.$spacing-xs;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.timestamp {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    margin-right: vars.$spacing-xs;
+}
+
+.player-name {
+    color: #ffd166;
+    font-weight: vars.$font-weight-medium;
+}
+
+.system-name {
+    color: #06d6a0;
+    font-weight: vars.$font-weight-medium;
+}
+
+.message-content {
+    color: vars.$colour-text;
+}
+
+.input-form {
+    display: flex;
+    gap: vars.$spacing-xs;
+}
+
+.chat-input {
+    flex: 1;
+    background-color: vars.$colour-primary-dark;
+    color: vars.$colour-text;
+    border: 1px solid vars.$colour-secondary;
+    border-radius: vars.$border-radius-sm;
+    padding: vars.$spacing-xs vars.$spacing-sm;
+    outline: none;
+    font-size: vars.$font-size-sm;
+
+    &:focus {
+        border-color: lighten(vars.$colour-secondary, 10%);
+    }
+}
+
+.send-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: vars.$colour-secondary;
+    color: vars.$colour-text;
+    border: none;
+    border-radius: vars.$border-radius-sm;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: lighten(vars.$colour-secondary, 5%);
+    }
+}
+
+.chat-toggle {
+    display: flex;
+    align-items: center;
+    background-color: vars.$colour-primary;
+    color: vars.$colour-text;
+    border: 1px solid vars.$colour-secondary;
+    border-radius: vars.$border-radius-sm;
+    padding: vars.$spacing-xs vars.$spacing-sm;
+    cursor: pointer;
+    font-size: vars.$font-size-sm;
+
+    &:hover {
+        background-color: vars.$colour-primary-dark;
+    }
+}
+
+.chat-icon {
+    margin-right: vars.$spacing-xs;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

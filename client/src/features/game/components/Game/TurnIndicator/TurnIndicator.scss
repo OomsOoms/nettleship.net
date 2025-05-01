@@ -1,0 +1,27 @@
+.turn-indicator {
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 24rem;
+    margin-left: auto;
+    margin-right: auto;
+
+    .status-message {
+        text-align: center;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        color: #fde047; // yellow-300
+    }
+
+    .timer-container {
+        height: 0.5rem;
+        background-color: #374151; // gray-700
+        border-radius: 9999px;
+        overflow: hidden;
+
+        .timer-bar {
+            height: 100%;
+            background-color: #eab308; // yellow-500
+            transition: width 100ms linear;
+        }
+    }
+}

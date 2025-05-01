@@ -1,0 +1,39 @@
+@use '../../../index.scss' as vars;
+
+// Button component
+.button {
+    // Base styles
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border: 1px solid transparent;
+    border-radius: vars.$border-radius-md;
+    font-size: vars.$font-size-md;
+    font-weight: vars.$font-weight-medium;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background-color: vars.$colour-primary;
+    height: vars.$input-height;
+
+    // it would probably be better if this wasnt used but some pages break
+    width: 100%;
+
+    // Hover state
+    &:hover:not(:disabled) {
+        border-color: vars.$colour-primary-dark;
+        background-color: vars.$colour-primary-dark;
+    }
+
+    // Focus states
+    &:focus,
+    &:focus-visible {
+        outline: 4px auto -webkit-focus-ring-color;
+        outline-offset: 2px;
+    }
+
+    // Disabled state
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background-color: vars.$colour-primary-dark;
+    }
+}

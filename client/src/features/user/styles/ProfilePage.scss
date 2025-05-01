@@ -1,0 +1,102 @@
+@use '../../../index.scss' as vars;
+
+.profile-page {
+    padding: vars.$spacing-lg 0;
+}
+
+.profile-card {
+    background-color: vars.$colour-primary;
+    border-radius: vars.$border-radius-md;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+    padding: vars.$spacing-md;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: vars.$spacing-md;
+
+    @media (min-width: 640px) {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+}
+
+.avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+.profile-info {
+    text-align: center;
+    flex: 1;
+
+    @media (min-width: 640px) {
+        text-align: left;
+    }
+}
+
+.display-name {
+    font-size: vars.$font-size-lg;
+    font-weight: vars.$font-weight-bold;
+    margin-bottom: vars.$spacing-xs;
+}
+
+.username {
+    color: rgba(vars.$colour-text, 0.7);
+    font-size: vars.$font-size-sm;
+    margin-bottom: vars.$spacing-sm;
+}
+
+.bio {
+    margin-top: vars.$spacing-sm;
+}
+
+.profile-content {
+    padding: vars.$spacing-md;
+}
+
+.stats-title {
+    font-size: vars.$font-size-md;
+    font-weight: vars.$font-weight-bold;
+    margin-bottom: vars.$spacing-md;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: vars.$spacing-md;
+
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.stat-card {
+    background-color: vars.$colour-secondary;
+    padding: vars.$spacing-md;
+    border-radius: vars.$border-radius-sm;
+    text-align: center;
+}
+
+.stat-label {
+    color: rgba(vars.$colour-text, 0.7);
+    font-size: vars.$font-size-sm;
+    margin-bottom: vars.$spacing-xs;
+}
+
+.stat-value {
+    font-size: vars.$font-size-lg;
+    font-weight: vars.$font-weight-bold;
+}

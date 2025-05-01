@@ -1,0 +1,86 @@
+@use '../../../index.scss' as vars;
+
+.player-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    background-color: vars.$colour-primary-dark;
+    position: relative;
+
+    &--empty {
+        background-color: rgba(vars.$colour-primary-dark, 0.5);
+    }
+
+    &__avatar {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: vars.$colour-secondary;
+        position: relative;
+
+        &--empty {
+            background-color: vars.$colour-secondary-dark;
+        }
+    }
+
+    &__name {
+        flex: 1;
+        color: vars.$colour-text;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+
+        &--empty {
+            color: rgba(vars.$colour-text, 0.5);
+        }
+    }
+
+    &__you-tag {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        margin-left: 0.25rem;
+    }
+
+    &__crown {
+        width: 1.25rem;
+        height: 1.25rem;
+        color: #FFD700;
+    }
+
+    &__user-icon {
+        width: 1.25rem;
+        height: 1.25rem;
+        color: #4CAF50;
+    }
+
+    &__bot-icon {
+        width: 1.25rem;
+        height: 1.25rem;
+        color: #3498db;
+    }
+
+    &__kick-button {
+        background-color: rgba(231, 76, 60, 0.8);
+        color: white;
+        border: none;
+        border-radius: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s;
+
+        &:hover {
+            background-color: rgba(231, 76, 60, 1);
+        }
+    }
+
+    &:hover &__kick-button {
+        opacity: 1;
+    }
+}

@@ -1,0 +1,69 @@
+.lobby-entry-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 1rem;
+}
+
+.lobby-entry-card {
+    width: 100%;
+    max-width: 480px;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background-color: #323232;
+
+    h1 {
+        margin-bottom: 0.5rem;
+        font-size: 1.75rem;
+        text-align: center;
+    }
+
+    p {
+        margin-bottom: 1.5rem;
+        text-align: center;
+        color: #666;
+    }
+}
+
+.lobby-entry-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        label {
+            font-weight: 500;
+        }
+
+        .error-message {
+            color: #e53e3e;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+    }
+
+    .checkbox-group {
+        margin-top: 0.5rem;
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+
+            input[type="checkbox"] {
+                cursor: pointer;
+            }
+
+            .checkbox-label {
+                font-weight: normal;
+            }
+        }
+    }
+}

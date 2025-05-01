@@ -1,0 +1,311 @@
+@use '../../../index.scss' as vars;
+
+.edit-profile-page {
+    padding: vars.$spacing-lg 0;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    @media (min-width: 768px) {
+        padding: vars.$spacing-lg;
+    }
+}
+
+
+
+.profile-grid {
+    display: grid;
+    gap: vars.$spacing-lg;
+
+    @media (min-width: 768px) {
+        grid-template-columns: 1fr 3fr;
+    }
+
+    @media (min-width: 1024px) {
+        grid-template-columns: 1fr 4fr;
+    }
+}
+
+
+
+.profile-main {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-lg;
+}
+
+.card {
+    background-color: vars.$colour-secondary;
+    border-radius: vars.$border-radius-md;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    padding: vars.$spacing-md;
+    border-bottom: 1px solid vars.$colour-secondary;
+}
+
+.card-title {
+    font-size: vars.$font-size-lg;
+    font-weight: vars.$font-weight-bold;
+    margin-bottom: vars.$spacing-xs;
+}
+
+.card-description {
+    color: rgba(vars.$colour-text, 0.7);
+    font-size: vars.$font-size-sm;
+}
+
+.card-content {
+    padding: vars.$spacing-md;
+}
+
+.avatar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: vars.$spacing-md;
+
+    .avatar {
+        position: relative;
+        width: 6rem;
+        height: 6rem;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-bottom: vars.$spacing-md;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-edit {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: white;
+            border-radius: 50%;
+            padding: vars.$spacing-xs;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            /* Add this line to ensure it appears above other elements */
+            cursor: pointer;
+        }
+    }
+
+    .avatar-info {
+        text-align: center;
+        margin-bottom: vars.$spacing-md;
+
+        .display-name {
+            font-weight: vars.$font-weight-medium;
+        }
+
+        .username {
+            color: rgba(vars.$colour-text, 0.7);
+            font-size: vars.$font-size-sm;
+        }
+    }
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: vars.$spacing-sm;
+    width: 100%;
+
+    .stat-item {
+        background-color: vars.$colour-primary;
+        padding: vars.$spacing-sm;
+        border: 1px solid vars.$colour-secondary;
+        border-radius: vars.$border-radius-sm;
+        text-align: center;
+
+        .stat-value {
+            font-size: vars.$font-size-sm;
+            font-weight: vars.$font-weight-bold;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: rgba(vars.$colour-text, 0.7);
+        }
+    }
+}
+
+.tabs-container {
+    .tabs-header {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background-color: vars.$colour-secondary-dark;
+        border-radius: vars.$border-radius-md vars.$border-radius-md 0 0;
+        overflow: hidden;
+
+        .tab-button {
+            padding: vars.$spacing-sm;
+            background-color: vars.$colour-primary;
+            border: none;
+            color: vars.$colour-text;
+            font-weight: vars.$font-weight-medium;
+            cursor: pointer;
+            transition: background-color 0.2s;
+
+            &.active {
+                background-color: vars.$colour-secondary
+            }
+
+            &:hover:not(.active) {
+                background-color: vars.$colour-primary-dark
+            }
+        }
+    }
+
+    .tab-content {
+        border-radius: 0 0 vars.$border-radius-md vars.$border-radius-md;
+        overflow: hidden;
+    }
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-md;
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: vars.$spacing-xs;
+        margin-bottom: vars.$spacing-sm;
+        /* Reduce bottom margin */
+
+        .form-description {
+            font-size: vars.$font-size-sm;
+            color: rgba(vars.$colour-text, 0.7);
+        }
+    }
+
+    /* Style buttons in the email section */
+    .email-actions {
+        display: flex;
+        gap: vars.$spacing-md;
+        margin-top: vars.$spacing-sm;
+        margin-bottom: vars.$spacing-md;
+    }
+}
+
+/* Adjust the email container to better align items */
+.email-container {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-sm;
+    width: 100%;
+
+    /* Make the input take up most but not all of the space */
+    .input-wrapper {
+        flex: 1;
+        max-width: 70%;
+    }
+
+    /* Style the badge to align properly */
+    .badge {
+        align-self: center;
+        margin-left: vars.$spacing-sm;
+    }
+}
+
+.badge {
+    padding: vars.$spacing-xs vars.$spacing-sm;
+    border-radius: vars.$border-radius-sm;
+    font-size: vars.$font-size-sm;
+    font-weight: vars.$font-weight-medium;
+    white-space: nowrap;
+
+    &.verified {
+        background-color: #22c55e;
+        color: white;
+    }
+
+    &.not-verified {
+        background-color: transparent;
+        border: 1px solid #f59e0b;
+        color: #f59e0b;
+    }
+}
+
+.divider {
+    height: 1px;
+    background-color: vars.$colour-secondary;
+    margin: vars.$spacing-md 0;
+}
+
+.section-title {
+    font-size: vars.$font-size-md;
+    font-weight: vars.$font-weight-medium;
+    margin-bottom: vars.$spacing-sm;
+}
+
+/* Adjust connected accounts spacing */
+.connected-accounts {
+    margin-bottom: vars.$spacing-md;
+
+    .section-title {
+        margin-bottom: vars.$spacing-sm;
+    }
+}
+
+.connected-accounts {
+    margin-bottom: vars.$spacing-md;
+
+    .account-item {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        padding: vars.$spacing-md;
+        border: 1px solid vars.$colour-secondary;
+        border-radius: vars.$border-radius-sm;
+        gap: vars.$spacing-md;
+
+        .account-info {
+            display: flex;
+            align-items: center;
+            gap: vars.$spacing-sm;
+
+            .account-icon {
+                width: 2.5rem;
+                height: 2.5rem;
+                background-color: #4285F4;
+                color: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: vars.$font-weight-bold;
+                flex-shrink: 0;
+            }
+
+            .account-name {
+                font-weight: vars.$font-weight-medium;
+            }
+
+            .account-email {
+                font-size: vars.$font-size-sm;
+                color: rgba(vars.$colour-text, 0.7);
+            }
+        }
+
+        button {
+            width: 6rem;
+        }
+    }
+}
+
+/* Fix for modals appearing behind inputs */
+.modal,
+.modal-content,
+.modal-overlay,
+.dropdown-content {
+    z-index: 100 !important;
+}

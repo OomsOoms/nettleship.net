@@ -1,0 +1,150 @@
+.GameFilters {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background-color: hsl(0, 0%, 20%);
+    padding: 16px;
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+
+    @media (min-width: 768px) {
+        gap: 24px;
+    }
+
+    .filters-row {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        width: 100%;
+
+        @media (min-width: 768px) {
+            flex-direction: row;
+            align-items: center;
+        }
+    }
+
+    .search-box {
+        width: 100%;
+
+        @media (min-width: 768px) {
+            min-width: 300px;
+            flex: 1;
+        }
+    }
+
+    .filters-group {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        width: 100%;
+
+        @media (min-width: 768px) {
+            width: auto;
+            gap: 16px;
+        }
+    }
+
+    .select-status {
+        flex: 1;
+        width: 100%;
+        min-width: 120px;
+
+        @media (min-width: 768px) {
+            width: auto;
+        }
+    }
+
+    .select-game-type {
+        flex: 1;
+        width: 100%;
+        min-width: 70px;
+
+        @media (min-width: 768px) {
+            width: auto;
+        }
+    }
+
+    .refresh-button {
+        width: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0 16px;
+
+        @media (max-width: 768px) {
+            flex-shrink: 0;
+        }
+
+        .refresh-icon {
+            margin-right: 4px;
+        }
+    }
+
+    .player-filter {
+        display: flex;
+        flex-direction: row;
+        gap: 16px;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+
+        @media (max-width: 768px) {
+            flex-wrap: nowrap;
+        }
+    }
+
+    .slider-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+
+            .slider-label {
+                font-size: 0.9em;
+                color: #aaa;
+            }
+
+            .slider-value {
+                font-size: 0.9em;
+                color: #fff;
+            }
+        }
+
+        input[type="range"] {
+            flex: 1;
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: #1a1a1a;
+            border-radius: 3px;
+            outline: none;
+
+            &::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 16px;
+                height: 16px;
+                background: #646cff;
+                border-radius: 50%;
+                cursor: pointer;
+            }
+
+            &::-moz-range-thumb {
+                width: 16px;
+                height: 16px;
+                background: #646cff;
+                border-radius: 50%;
+                cursor: pointer;
+                border: none;
+            }
+        }
+    }
+}

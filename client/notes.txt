@@ -1,0 +1,54 @@
+had to rename stuff in register password service tbf my func naming there is so so shitty
+
+add form to index.ts
+
+add to page
+
+the rest of it is just a register page with stuff deleted like i think thats fine to write in the docs to avoid repetition
+
+oh and then the token stuff fuck
+idk how to get the token from the url query
+
+token: window.location.search.split('=')[1],
+
+easy
+
+ERROR i sent it in the body and not the bearer token
+
+i needed to do resposne.data.message as it would give an error as without .message it was an object which the component cant display
+
+
+
+
+
+
+profile header component
+
+
+
+
+
+
+add game stats to user model
+
+tconfig for the @ imports
+
+
+
+
+sent request to edit profile and it didnt work cuz they were all empty string apart from the one i changed so then it got 400
+
+        Object.entries(formData).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                formDataToSend.append(key, value);
+            }
+        });
+
+        fixed by changing that
+
+
+
+in the backend the auth route also returns the displayName now
+
+need to make it check the query for the display name then the displayanme so anyone can set it
+it should throw an error if its not included

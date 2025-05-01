@@ -1,0 +1,55 @@
+@use '../../../index.scss' as vars;
+
+.input-field {
+    padding: 10px;
+    border: 1px solid vars.$colour-text;
+    border-radius: 10px;
+    text-align: left;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    height: vars.$input-height;
+
+    input {
+        color: vars.$colour-text;
+        width: 100%;
+        padding-top: 10px;
+        border: none;
+        outline: none;
+        background-color: transparent;
+        font-size: vars.$font-size-md;
+        box-sizing: border-box;
+
+        &:focus+label,
+        &:not(:placeholder-shown)+label {
+            top: 5px;
+            left: 10px;
+            font-size: 0.8em;
+            color: #555;
+            transform: translateY(0);
+        }
+    }
+
+    label {
+        position: absolute;
+        top: 50%;
+        left: 10px;
+        transform: translateY(-50%);
+        font-size: 1em;
+        color: #888;
+        transition: all 0.2s ease-in-out;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    button {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        z-index: 2;
+    }
+}

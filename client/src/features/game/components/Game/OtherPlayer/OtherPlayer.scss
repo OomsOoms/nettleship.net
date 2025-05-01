@@ -1,0 +1,66 @@
+.other-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .player-name-container {
+        position: relative;
+        margin-bottom: 0.5rem;
+
+        .timer-background {
+            position: absolute;
+            inset: 0;
+            background-color: #eab308; // yellow-500
+            border-radius: 9999px;
+            transition: width 100ms linear, left 100ms linear;
+        }
+
+        .player-name {
+            position: relative;
+            z-index: 10;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            background-color: #1e293b; // slate-800
+            color: white;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            &.active {
+                background-color: transparent;
+                color: black;
+                font-weight: 500;
+            }
+
+            .host-badge {
+                font-size: 0.625rem;
+                background-color: #2563eb;
+                color: white;
+                padding: 0.125rem 0.25rem;
+                border-radius: 0.25rem;
+            }
+        }
+    }
+
+    .cards-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        height: 40px;
+
+        .card-wrapper {
+            position: absolute;
+        }
+    }
+
+    .player-score {
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        color: white;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 0.125rem 0.375rem;
+        border-radius: 0.25rem;
+    }
+}

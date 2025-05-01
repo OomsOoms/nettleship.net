@@ -1,0 +1,44 @@
+@use '../../../index.scss' as vars;
+
+.slider-container {
+    width: 100%;
+
+    .slider {
+        width: 100%;
+        height: vars.$spacing-sm;
+        -webkit-appearance: none;
+        appearance: none;
+        background: vars.$border-color;
+        outline: none;
+        border-radius: vars.$border-radius-sm;
+
+        &::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: vars.$spacing-md;
+            height: vars.$spacing-md;
+            background: vars.$colour-primary;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.15s ease;
+
+            &:hover {
+                background: vars.$colour-secondary;
+            }
+        }
+
+        &::-moz-range-thumb {
+            width: vars.$spacing-md;
+            height: vars.$spacing-md;
+            background: vars.$colour-primary;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            transition: background 0.15s ease;
+
+            &:hover {
+                background: vars.$colour-secondary;
+            }
+        }
+    }
+}

@@ -1,0 +1,199 @@
+@use '../../../index.scss' as vars;
+
+.menu {
+    position: fixed;
+    z-index: 1000;
+
+    // Positioning variants
+    &.top-left {
+        top: 1rem;
+        left: 1rem;
+
+        .menu-dropdown {
+            top: 100%;
+            left: 0;
+        }
+    }
+
+    &.top-right {
+        top: 1rem;
+        right: 1rem;
+
+        .menu-dropdown {
+            top: 100%;
+            right: 0;
+        }
+    }
+
+    &.bottom-left {
+        bottom: 1rem;
+        left: 1rem;
+
+        .menu-dropdown {
+            bottom: 100%;
+            left: 0;
+        }
+    }
+
+    &.bottom-right {
+        bottom: 1rem;
+        right: 1rem;
+
+        .menu-dropdown {
+            bottom: 100%;
+            right: 0;
+        }
+    }
+
+    // Burger menu button
+    .menu-toggle {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background-color: #323232;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
+
+        &:hover {
+            background-color: #444;
+        }
+
+        .burger-icon {
+            width: 1.5rem;
+            height: 1.2rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            span {
+                display: block;
+                height: 2px;
+                width: 100%;
+                background-color: white;
+                border-radius: 2px;
+                transition: transform 0.3s, opacity 0.3s;
+            }
+        }
+    }
+
+    &.open {
+        .burger-icon {
+            span:first-child {
+                transform: translateY(8px) rotate(45deg);
+            }
+
+            span:nth-child(2) {
+                opacity: 0;
+            }
+
+            span:last-child {
+                transform: translateY(-8px) rotate(-45deg);
+            }
+        }
+    }
+
+    // Dropdown menu
+    .menu-dropdown {
+        position: absolute;
+        min-width: 200px;
+        background-color: #323232;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        margin-top: 0.5rem;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: opacity 0.3s, transform 0.3s, visibility 0s 0.3s;
+        overflow: hidden;
+
+        &.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: #323232;
+
+            h3 {
+                margin: 0;
+                color: white;
+                font-size: 1rem;
+            }
+
+            .close-button {
+                background: none;
+                border: none;
+                color: rgba(255, 255, 255, 0.7);
+                cursor: pointer;
+                font-size: 1rem;
+                padding: 0.25rem;
+
+                &:hover {
+                    color: white;
+                }
+            }
+        }
+
+        .menu-items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+
+            li {
+                button {
+                    display: flex;
+                    align-items: center;
+                    width: 100%;
+                    text-align: left;
+                    padding: 0.75rem 1rem;
+                    background: none;
+                    border: none;
+                    color: white;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+
+                    &:hover {
+                        background-color: #323232;
+                    }
+
+                    &.danger {
+                        color: #ff4d4f;
+
+                        &:hover {
+                            background-color: #444;
+                        }
+                    }
+
+                    .item-icon {
+                        margin-right: 0.75rem;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                }
+            }
+        }
+    }
+
+    // Backdrop when menu is open
+    .menu-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: transparent;
+        z-index: -1;
+    }
+}

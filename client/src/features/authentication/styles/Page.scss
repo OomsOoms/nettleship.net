@@ -1,0 +1,80 @@
+.page {
+    position: relative;
+    width: min(90vw, 400px);
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    box-sizing: border-box;
+    background-color: #323232;
+
+    .input-field {
+        margin: 10px 0;
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 10px 0;
+
+        &::before,
+        &::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #ccc;
+        }
+
+        span {
+            padding: 0 10px;
+            color: #ffffff;
+        }
+    }
+
+    p {
+        text-align: center;
+        color: white;
+    }
+
+    .google-btn {
+        width: 100%;
+        //background-color: #4285f4;
+        color: white;
+        padding: 10px;
+        border: none;
+        cursor: pointer;
+
+        &:hover {
+            background-color: #357ae8;
+        }
+    }
+
+    .forgot-password {
+        text-align: left;
+        padding: 10px 0;
+    }
+
+    .forgot-password-link {
+        color: #007bff;
+        /* Blue color like a typical link */
+        text-decoration: underline;
+        /* Underline for link effect */
+        cursor: pointer;
+        /* Pointer cursor to indicate it's clickable */
+    }
+
+    .forgot-password-link:hover {
+        color: #0056b3;
+        /* Darker blue on hover for interaction feedback */
+    }
+}
+
+.hcaptcha-container {
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+}

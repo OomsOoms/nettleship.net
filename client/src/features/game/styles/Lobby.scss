@@ -1,0 +1,366 @@
+@use '../../../index.scss' as vars;
+
+/* Centered wrapper */
+.lobby-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* Lobby */
+.lobby {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    &__container {
+        background-color: vars.$colour-secondary;
+        border-radius: 0.75rem;
+        max-width: 72rem;
+        width: 100%;
+        padding: 1.5rem;
+        position: relative;
+        max-height: calc(100vh - 2rem);
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__content {
+        margin-top: 0.5rem;
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__mobile-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    &__desktop-layout {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 1.5rem;
+        width: 100%;
+        height: 100%;
+        align-items: start;
+        overflow: hidden;
+    }
+}
+
+/* Players Section */
+.players-section {
+    &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    &__title {
+        color: vars.$colour-text;
+        font-weight: bold;
+
+        &--desktop {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+    }
+
+    &__avatars {
+        display: flex;
+        overflow-x: auto;
+        gap: 0.75rem;
+        padding-bottom: 0.5rem;
+        min-width: 0; // Important for flexbox children to allow shrinking below content size
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        max-width: 100%; // Ensure it doesn't exceed container width
+        width: 100%; // Take full width of container
+
+        /* Custom scrollbar styling */
+        &::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+    }
+
+    &__select {
+        margin-bottom: 1rem;
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+        flex: 1; // Take up available space
+        max-width: 100%; // Ensure it doesn't exceed container width
+
+        /* Custom scrollbar styling */
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+    }
+
+    &--desktop {
+        background-color: vars.$colour-primary;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        height: auto; // Let it size naturally
+        max-height: calc(100vh - 10rem); // Limit maximum height with some space for margins
+        overflow: hidden; // Hide overflow from the container itself
+    }
+}
+
+/* Settings Section */
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.settings-section__content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 5rem;
+    /* Space for the buttons */
+}
+
+.settings-section__scrollable-container {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    max-height: calc(100vh - 15rem);
+    /* Adjust based on your layout */
+
+    /* Custom scrollbar styling */
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+    }
+}
+
+.settings-section__items {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    &--mobile {
+        gap: 1rem;
+    }
+}
+
+.settings-section__buttons {
+    display: flex;
+    gap: 1rem;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem 0;
+    background-color: vars.$colour-secondary;
+    z-index: 10;
+}
+
+.settings-section__button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 0;
+
+    &--invite,
+    &--start {
+        background-color: vars.$colour-text;
+        color: vars.$colour-primary;
+        font-weight: bold;
+
+        &:hover {
+            background-color: rgba(vars.$colour-text, 0.6) !important;
+        }
+    }
+}
+
+.lobby-page {
+    width: 100%;
+    max-width: 100vw;
+    min-width: 100vw;
+    overflow-x: hidden;
+    /* Prevent horizontal overflow */
+}
+
+/* Deck Editor Section */
+.deck-editor {
+    width: 100%;
+
+    &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+
+    &__title {
+        h2 {
+            color: vars.$colour-text;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+    }
+
+    &__total {
+        color: vars.$colour-text;
+        opacity: 0.7;
+        font-size: 0.875rem;
+    }
+
+    &__cards-container {
+        background-color: vars.$colour-primary;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-top: 1rem;
+        max-height: 400px;
+        overflow-y: auto;
+
+        /* Custom scrollbar styling */
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+    }
+
+    &__cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 0.75rem;
+
+        @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    &__card {
+        display: flex;
+        background-color: vars.$colour-secondary;
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+
+    &__card-color {
+        width: 4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &.card-red {
+            background-color: #e74c3c;
+        }
+
+        &.card-green {
+            background-color: #2ecc71;
+        }
+
+        &.card-blue {
+            background-color: #3498db;
+        }
+
+        &.card-yellow {
+            background-color: #f1c40f;
+            color: #2c3e50;
+        }
+
+        &.card-wild {
+            background: #000000
+        }
+    }
+
+    &__card-value {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: white;
+    }
+
+    &__card-details {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem;
+    }
+
+    &__card-name {
+        font-weight: 500;
+        color: vars.$colour-text;
+    }
+
+    &__card-count {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    &__count-value {
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.25rem;
+        min-width: 2.5rem;
+        text-align: center;
+        font-weight: 500;
+        color: vars.$colour-text;
+    }
+
+    &__count-button {
+        padding: 0.25rem;
+        min-width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &__footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+    }
+}
