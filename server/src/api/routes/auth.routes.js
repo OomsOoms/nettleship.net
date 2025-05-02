@@ -5,20 +5,20 @@ const { authValidationRules: avr } = require('../validations');
 
 // /api/auth
 router
-    // status
-    .get('/status', ac.getStatus)
+  // status
+  .get('/status', ac.getStatus)
 
-    // auth
-    .post('/login', ac.localLogin)
-    .get('/google', ac.googleLogin)
-    .get('/google/callback', ac.googleCallback)
-    
-    // logout
-    .delete('/logout', ac.logout)
-    .delete('/google', avr.unlinkGoogle, ac.unlinkGoogle)
+  // auth
+  .post('/login', ac.localLogin)
+  .get('/google', ac.googleLogin)
+  .get('/google/callback', ac.googleCallback)
 
-    // reset password
-    .post('/reset-password', avr.requestResetPassword, ac.requestResetPassword)
-    .put('/reset-password', avr.resetPassword, ac.resetPassword);
+  // logout
+  .delete('/logout', ac.logout)
+  .delete('/google', avr.unlinkGoogle, ac.unlinkGoogle)
+
+  // reset password
+  .post('/reset-password', avr.requestResetPassword, ac.requestResetPassword)
+  .put('/reset-password', avr.resetPassword, ac.resetPassword);
 
 module.exports = router;
