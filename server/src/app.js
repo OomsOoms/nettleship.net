@@ -19,17 +19,16 @@ app.set('trust proxy', 1);
 
 // middleware for logging
 if (process.env.NODE_ENV === 'production') {
-    app.use(morgan('combined', { stream: accessLogStream })); // file logs only
+  app.use(morgan('combined', { stream: accessLogStream })); // file logs only
 } else {
-    // tests and development
-    app.use(morgan('dev')); // console logs only
+  // tests and development
+  app.use(morgan('dev')); // console logs only
 }
 
 // built-in middleware for parsing URL-encoded bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // havent written abou tthis and im lazy so its gonna be like this should be moved to its own file
-
 
 // session middleware
 app.use(sessionConfig);
@@ -39,11 +38,11 @@ app.use(passport.session());
 
 // guest id middleware should move this to its own file because i could end up adding more to guest users
 app.use((req, res, next) => {
-    if (req.isAuthenticated()) return next();
-    if (!req.session.guestId) {
-        req.session.guestId = `guest_${Math.random().toString(36).substring(7)}`;
-    }
-    next();
+  if (req.isAuthenticated()) return next();
+  if (!req.session.guestId) {
+    req.session.guestId = `guest_${Math.random().toString(36).substring(7)}`;
+  }
+  next();
 });
 
 // Enable CORS for all routes
@@ -60,20 +59,20 @@ require('./api/routes')(app);
 
 // server status route, useful for monitoring services
 app.get('/api/status', (req, res) => {
-    res.status(200).json({ status: 'Server is running' });
+  res.status(200).json({ status: 'Server is running' });
 });
 
 // error handling middleware
 app.all('*', (req, res) => {
-    res.status(404).json({ message: '404 Route does not exist' });
+  res.status(404).json({ message: '404 Route does not exist' });
 });
 
 // error handler middleware - must be after routes
 app.use(errorHandler);
 
 db.connect().then(() => {
-    const PORT = process.env.PORT || 8000;
-    app.listen(PORT, '0.0.0.0', () => {
-        logger.info(`Server is running on http://localhost:${PORT}/`);
-    });
+  const PORT = process.env.PORT || 8000;
+  app.listen(PORT, '0.0.0.0', () => {
+    logger.info(`Server is running on http://localhost:${PORT}/`);
+  });
 });

@@ -4,8 +4,8 @@ const authValidationRules = require('./auth.validation');
 const gameSessionValidationRules = require('./gameSession.validation');
 
 module.exports = {
-    testValidationRules,
-    userValidatonRules,
-    authValidationRules,
-    gameSessionValidationRules,
+  testValidationRules,
+  userValidatonRules,
+  authValidationRules,
+  gameSessionValidationRules,
 };
