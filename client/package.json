@@ -15,7 +15,6 @@
     "axios": "^1.8.3",
     "lucide-react": "^0.484.0",
     "react": "^19.0.0",
-    "react-avatar-editor": "^13.0.2",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.3.0",
     "sass": "^1.85.1"
