@@ -1,6 +1,6 @@
 import Button from "@components/ui/Button";
 import InputField from "@components/ui/InputField";
-import "../../styles/LobbyEntry.scss"
+import "../../styles/LobbyEntry.scss";
 
 interface LobbyEntryProps {
   isAuthenticated: boolean;
@@ -11,7 +11,14 @@ interface LobbyEntryProps {
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
-export default function LobbyEntry({ isAuthenticated = false, displayName, setDisplayName, saveDisplayName, setSaveDisplayName, handleSubmit }: LobbyEntryProps) {
+export default function LobbyEntry({
+  isAuthenticated = false,
+  displayName,
+  setDisplayName,
+  saveDisplayName,
+  setSaveDisplayName,
+  handleSubmit,
+}: LobbyEntryProps) {
   return (
     <div className="lobby-entry-container">
       <div className="lobby-entry-card">
@@ -20,26 +27,35 @@ export default function LobbyEntry({ isAuthenticated = false, displayName, setDi
 
         <form onSubmit={handleSubmit} className="lobby-entry-form">
           <div className="form-group">
-              <InputField
-                  name="displayName"
-                  value={displayName}
-                  onChange={(e) => {setDisplayName(e.target.value)}}
-              />
+            <InputField
+              name="displayName"
+              value={displayName}
+              onChange={(e) => {
+                setDisplayName(e.target.value);
+              }}
+            />
           </div>
 
           {isAuthenticated && (
             <div className="form-group checkbox-group">
               <label className="checkbox-container">
-                <input type="checkbox" checked={saveDisplayName} onChange={(e) => setSaveDisplayName(e.target.checked)} />
-                <span className="checkbox-label">Save this name to my account</span>
+                <input
+                  type="checkbox"
+                  checked={saveDisplayName}
+                  onChange={(e) => setSaveDisplayName(e.target.checked)}
+                />
+                <span className="checkbox-label">
+                  Save this name to my account
+                </span>
               </label>
             </div>
           )}
 
-          <Button disabled={!displayName} type="submit">Enter Lobby</Button>
+          <Button disabled={!displayName} type="submit">
+            Enter Lobby
+          </Button>
         </form>
       </div>
     </div>
-  )
+  );
 }
-

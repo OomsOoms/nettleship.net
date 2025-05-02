@@ -1,19 +1,20 @@
-"use client"
+"use client";
 
-import type { CardColour } from "../Game"
-import "./ColourSelector.scss"
+import type { CardColour } from "../Game";
+import "./ColourSelector.scss";
 
 interface ColourSelectorProps {
-  handleColourSelect: (colour: CardColour) => void
+  handleColourSelect: (colour: CardColour) => void;
 }
 
 const ColourSelector = ({ handleColourSelect }: ColourSelectorProps) => {
-  const colours: { name: CardColour; className: string; textClass: string }[] = [
-    { name: "red", className: "red", textClass: "white" },
-    { name: "blue", className: "blue", textClass: "white" },
-    { name: "green", className: "green", textClass: "white" },
-    { name: "yellow", className: "yellow", textClass: "black" },
-  ]
+  const colours: { name: CardColour; className: string; textClass: string }[] =
+    [
+      { name: "red", className: "red", textClass: "white" },
+      { name: "blue", className: "blue", textClass: "white" },
+      { name: "green", className: "green", textClass: "white" },
+      { name: "yellow", className: "yellow", textClass: "black" },
+    ];
 
   return (
     <div className="colour-selector">
@@ -34,8 +35,7 @@ const ColourSelector = ({ handleColourSelect }: ColourSelectorProps) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ColourSelector
-
+export default ColourSelector;
