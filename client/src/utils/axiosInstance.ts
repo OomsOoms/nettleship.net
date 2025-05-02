@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 const createAxiosInstance = () => {
   // Use different base URLs based on environment
@@ -6,29 +6,29 @@ const createAxiosInstance = () => {
 
   const axiosInstance = axios.create({
     baseURL,
-    timeout: parseInt('30000', 10),
+    timeout: parseInt("30000", 10),
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     withCredentials: true,
   });
 
   axiosInstance.interceptors.request.use(
     (config) => {
-      console.log('[Request]', config);
+      console.log("[Request]", config);
       return config;
     },
-    (error) => Promise.reject(error)
+    (error) => Promise.reject(error),
   );
-    axiosInstance.interceptors.response.use(
+  axiosInstance.interceptors.response.use(
     (response) => {
-      console.log('[Response]', response);
+      console.log("[Response]", response);
       return response;
     },
     (error) => {
-      console.error('[Response Error]', error);
+      console.error("[Response Error]", error);
       return Promise.reject(error);
-    }
+    },
   );
 
   return axiosInstance;

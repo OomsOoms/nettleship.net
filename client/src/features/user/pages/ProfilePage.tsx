@@ -1,28 +1,28 @@
-import { useParams } from "react-router-dom"
-import useGetUserByUsername from "../hooks/useGetUserByUsername"
-import MainLayout from "@components/layout/MainLayout"
-import "../styles/ProfilePage.scss"
+import { useParams } from "react-router-dom";
+import useGetUserByUsername from "../hooks/useGetUserByUsername";
+import MainLayout from "@components/layout/MainLayout";
+import "../styles/ProfilePage.scss";
 
 export interface User {
-  google: any
-  local: any
-  displayName: string
-  username: string
+  google: any;
+  local: any;
+  displayName: string;
+  username: string;
   profile: {
-    displayName: string
-    bio: string
-    avatarUrl: string
-  }
+    displayName: string;
+    bio: string;
+    avatarUrl: string;
+  };
   stats: {
-    winStreak: number
-    wins: number
-    gamesPlayed: number
-    timePlayed: string
-  }
+    winStreak: number;
+    wins: number;
+    gamesPlayed: number;
+    timePlayed: string;
+  };
 }
 
 const ProfilePage = () => {
-  const { username } = useParams<{ username: string }>()
+  const { username } = useParams<{ username: string }>();
   const { user, loading } = useGetUserByUsername(username || "");
 
   // Handle all states explicitly
@@ -30,20 +30,17 @@ const ProfilePage = () => {
   if (!user) return <div>User not found</div>;
 
   // Now we're guaranteed to have user data
-  const avatarUrl = user.profile?.avatarUrl.startsWith('https')
+  const avatarUrl = user.profile?.avatarUrl.startsWith("https")
     ? user.profile.avatarUrl
     : `${import.meta.env.VITE_IMAGE_URL}${user.profile.avatarUrl}`;
-  
+
   return (
     <MainLayout>
       <div className="container profile-page">
         <div className="profile-card">
           <div className="profile-header">
             <div className="avatar">
-              <img
-                src={avatarUrl}
-                alt={user.profile?.displayName}
-              />
+              <img src={avatarUrl} alt={user.profile?.displayName} />
             </div>
 
             <div className="profile-info">
@@ -77,8 +74,7 @@ const ProfilePage = () => {
         </div>
       </div>
     </MainLayout>
-  )
-}
+  );
+};
 
-export default ProfilePage
-
+export default ProfilePage;

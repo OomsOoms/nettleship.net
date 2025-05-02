@@ -1,19 +1,19 @@
-import { useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
-import { useUser } from "../../../context/UserContext"
-import useCheckGameExists from "../hooks/useCheckGameExists"
-import useWebSocket from "../hooks/useWebSocket"
+import { useUser } from "../../../context/UserContext";
+import useCheckGameExists from "../hooks/useCheckGameExists";
+import useWebSocket from "../hooks/useWebSocket";
 
-import Game from "../components/Game/Game"
-import LobbyEntry from "../components/Lobby/LobbyEntry"
-import Lobby from "../components/Lobby/Lobby"
-import Menu from "../../../components/layout/Menu/Menu"
-import GameChat from "../components/GameChat/GameChat"
-import { ExitIcon } from "../../../assets/Icons"
+import Game from "../components/Game/Game";
+import LobbyEntry from "../components/Lobby/LobbyEntry";
+import Lobby from "../components/Lobby/Lobby";
+import Menu from "../../../components/layout/Menu/Menu";
+import GameChat from "../components/GameChat/GameChat";
+import { ExitIcon } from "../../../assets/Icons";
 
-import "../styles/LobbyPage.scss"
-import { useEffect } from "react"
+import "../styles/LobbyPage.scss";
+import { useEffect } from "react";
 
 interface GameSettings {
   maxPlayers: number;
@@ -32,7 +32,7 @@ interface GameSettings {
 
 export default function LobbyPage() {
   const gameCode = window.location.pathname.split("/").pop();
-  
+
   const { user } = useUser();
   const navigate = useNavigate();
   const { checkGame } = useCheckGameExists();
@@ -48,16 +48,16 @@ export default function LobbyPage() {
   } = useWebSocket();
 
   // store the game state
-  const [player, setPlayer] = useState()
-  const [players, setPlayers] = useState([])
-  const [gameSettings, setGameSettings] = useState<GameSettings>()
+  const [player, setPlayer] = useState();
+  const [players, setPlayers] = useState([]);
+  const [gameSettings, setGameSettings] = useState<GameSettings>();
   const [gameStatus, setGameStatus] = useState("lobby");
-  const [defaultDeckConfig, setDefaultDeckConfig] = useState([])
-  const [deckConfig, setDeckConfig] = useState()
+  const [defaultDeckConfig, setDefaultDeckConfig] = useState([]);
+  const [deckConfig, setDeckConfig] = useState();
   const [topCard, setTopCard] = useState(null);
   const [direction, setGameDirection] = useState(1);
-  const [messages, setMessages] = useState([])
-  
+  const [messages, setMessages] = useState([]);
+
   // Check if the game exists when the component mounts
   useEffect(() => {
     const fetchGameStatus = async () => {
@@ -76,7 +76,7 @@ export default function LobbyPage() {
   // Menu items for the GameMenu component with icons
   const leaveLobby = () => {
     navigate("/");
-  }
+  };
   const menuItems = [
     {
       label: "Leave Game",
@@ -84,8 +84,7 @@ export default function LobbyPage() {
       danger: true,
       icon: <ExitIcon />,
     },
-  ]
-
+  ];
 
   // player lobby actions
   // start game
@@ -93,13 +92,13 @@ export default function LobbyPage() {
     if (ws && isConnected) {
       ws.send(JSON.stringify({ type: "startGame", configuration: deckConfig }));
     }
-  }
+  };
   // kick player
   const handleKickPlayer = (userId: string) => {
     if (ws && isConnected) {
       ws.send(JSON.stringify({ type: "removePlayer", userId }));
     }
-  }
+  };
   // Add bot
   const handleAddBot = () => {
     if (ws && isConnected) {
@@ -116,10 +115,11 @@ export default function LobbyPage() {
 
     // Send the updated settings object
     if (ws && isConnected) {
-      ws.send(JSON.stringify({ type: "changeSettings", settings: updatedSettings }));
+      ws.send(
+        JSON.stringify({ type: "changeSettings", settings: updatedSettings }),
+      );
     }
   };
-
 
   // player game actions
   // handle last card
@@ -129,9 +129,20 @@ export default function LobbyPage() {
     }
   };
   // Handle play card action
-  const onPlayCard = (cardIndexes: number[], wildColour?: string, swapUserId?: string) => {
+  const onPlayCard = (
+    cardIndexes: number[],
+    wildColour?: string,
+    swapUserId?: string,
+  ) => {
     if (ws && isConnected) {
-      ws.send(JSON.stringify({ type: "placeCard", cardIndexes, wildColour: wildColour || null, swapUserId: swapUserId || null }));
+      ws.send(
+        JSON.stringify({
+          type: "placeCard",
+          cardIndexes,
+          wildColour: wildColour || null,
+          swapUserId: swapUserId || null,
+        }),
+      );
     }
   };
   // Handle draw card action
@@ -144,9 +155,9 @@ export default function LobbyPage() {
   // handle message action
   const onSendMessage = (message: string) => {
     if (ws && isConnected) {
-      ws.send(JSON.stringify({ type: "chatMessage", message }))
+      ws.send(JSON.stringify({ type: "chatMessage", message }));
     }
-  }
+  };
 
   // this should use the event send alongside the data not the data itself to decode the message
   // Listen for incoming messages from the WebSocket
@@ -193,7 +204,7 @@ export default function LobbyPage() {
 
     // update the messages when the chatLog is sent
     if (parsedMessage.chat) {
-      setMessages(parsedMessage.chat)
+      setMessages(parsedMessage.chat);
     }
 
     // append a new message to the chat log
@@ -213,10 +224,7 @@ export default function LobbyPage() {
       {gameStatus === "lobby" ? (
         isConnected && player && gameSettings ? (
           <>
-            <GameChat
-              messages={messages}
-              onSendMessage={onSendMessage}
-            />
+            <GameChat messages={messages} onSendMessage={onSendMessage} />
             <Lobby
               player={player}
               players={players}
@@ -242,10 +250,7 @@ export default function LobbyPage() {
         )
       ) : gameStatus === "inProgress" ? (
         <>
-          <GameChat
-            messages={messages}
-            onSendMessage={onSendMessage}
-          />
+          <GameChat messages={messages} onSendMessage={onSendMessage} />
           <Game
             player={player}
             players={players}
@@ -263,4 +268,3 @@ export default function LobbyPage() {
     </div>
   );
 }
-

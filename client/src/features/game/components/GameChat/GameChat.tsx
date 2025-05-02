@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import type React from "react"
-import "./GameChat.scss"
+import type React from "react";
+import "./GameChat.scss";
 
-import { useState, useEffect, useRef, type FormEvent } from "react"
+import { useState, useEffect, useRef, type FormEvent } from "react";
 
 interface Message {
-  player: string
-  message: string
-  timestamp: number
+  player: string;
+  message: string;
+  timestamp: number;
 }
 
 interface GameChatProps {
-  maxMessages?: number
-  messageDisplayTime?: number
-  recentMessageLimit?: number
-  messages: Message[]
-  onSendMessage: (message: string) => void
+  maxMessages?: number;
+  messageDisplayTime?: number;
+  recentMessageLimit?: number;
+  messages: Message[];
+  onSendMessage: (message: string) => void;
 }
 
 export function GameChat({
@@ -26,103 +26,109 @@ export function GameChat({
   messages,
   onSendMessage,
 }: GameChatProps) {
-  const [isTypingMode, setIsTypingMode] = useState(false)
-  const [input, setInput] = useState("")
-  const [recentMessages, setRecentMessages] = useState<Message[]>([])
-  const [showRecentMessages, setShowRecentMessages] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const messageTimersRef = useRef<NodeJS.Timeout[]>([])
+  const [isTypingMode, setIsTypingMode] = useState(false);
+  const [input, setInput] = useState("");
+  const [recentMessages, setRecentMessages] = useState<Message[]>([]);
+  const [showRecentMessages, setShowRecentMessages] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const messageTimersRef = useRef<NodeJS.Timeout[]>([]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, isTypingMode, recentMessages])
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTypingMode, recentMessages]);
 
   // Focus input when typing mode is activated
   useEffect(() => {
     if (isTypingMode) {
-      inputRef.current?.focus()
+      inputRef.current?.focus();
     }
-  }, [isTypingMode])
+  }, [isTypingMode]);
 
   // Handle new messages - detect when a new message arrives and stack them
   useEffect(() => {
     if (messages.length > 0) {
       // Get the latest message
-      const latestMessage = messages[messages.length - 1]
+      const latestMessage = messages[messages.length - 1];
 
       // Only add to recent messages if we're not in typing mode
       if (!isTypingMode) {
         // Add to recent messages (limited to recentMessageLimit)
         setRecentMessages((prev) => {
           // Create a new array with the latest message added
-          const updatedMessages = [...prev, latestMessage]
+          const updatedMessages = [...prev, latestMessage];
 
           // Limit to the most recent messages based on the prop
-          return updatedMessages.slice(-recentMessageLimit)
-        })
+          return updatedMessages.slice(-recentMessageLimit);
+        });
 
-        setShowRecentMessages(true)
+        setShowRecentMessages(true);
 
         // Set timer to remove this specific message after display time
         const timer = setTimeout(() => {
-          setRecentMessages((prev) => prev.filter((msg) => msg !== latestMessage))
+          setRecentMessages((prev) =>
+            prev.filter((msg) => msg !== latestMessage),
+          );
 
           // If no messages left, hide the container
           if (recentMessages.length <= 1) {
-            setShowRecentMessages(false)
+            setShowRecentMessages(false);
           }
-        }, messageDisplayTime)
+        }, messageDisplayTime);
 
-        messageTimersRef.current.push(timer)
+        messageTimersRef.current.push(timer);
       }
     }
-    
+
     return () => {
       // Clear all timers on unmount
-      messageTimersRef.current.forEach((timer) => clearTimeout(timer))
-    }
-  }, [messages, messageDisplayTime, isTypingMode, recentMessageLimit])
+      messageTimersRef.current.forEach((timer) => clearTimeout(timer));
+    };
+  }, [messages, messageDisplayTime, isTypingMode, recentMessageLimit]);
 
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInput(e.target.value)
-  }
+    setInput(e.target.value);
+  };
 
   // Handle form submission
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
     if (input.trim()) {
-      onSendMessage(input)
-      setInput("")
-      setIsTypingMode(false)
+      onSendMessage(input);
+      setInput("");
+      setIsTypingMode(false);
     }
-  }
+  };
 
   // Toggle typing mode with T key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "t" && !isTypingMode && document.activeElement?.tagName !== "INPUT") {
-        e.preventDefault()
-        setIsTypingMode(true)
+      if (
+        e.key === "t" &&
+        !isTypingMode &&
+        document.activeElement?.tagName !== "INPUT"
+      ) {
+        e.preventDefault();
+        setIsTypingMode(true);
       } else if (e.key === "Escape" && isTypingMode) {
-        setIsTypingMode(false)
+        setIsTypingMode(false);
       }
-    }
+    };
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [isTypingMode])
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isTypingMode]);
 
   // Limit the number of messages shown
-  const displayMessages = messages.slice(-maxMessages)
+  const displayMessages = messages.slice(-maxMessages);
 
   // Format timestamp
   const formatTime = (timestamp: number) => {
-    const date = new Date(timestamp)
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-  }
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
 
   return (
     <div className="game-chat">
@@ -131,8 +137,18 @@ export function GameChat({
         <>
           <div className="chat-header">
             <span>Game Chat</span>
-            <button className="hide-chat-button" onClick={() => setIsTypingMode(false)} aria-label="Close chat">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <button
+              className="hide-chat-button"
+              onClick={() => setIsTypingMode(false)}
+              aria-label="Close chat"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   d="M18 6L6 18"
                   stroke="currentColor"
@@ -159,7 +175,9 @@ export function GameChat({
               <div className="messages">
                 {displayMessages.map((msg, index) => (
                   <div key={index} className="message">
-                    <span className="timestamp">{formatTime(msg.timestamp)}</span>
+                    <span className="timestamp">
+                      {formatTime(msg.timestamp)}
+                    </span>
                     <span className="player-name">{msg.player}: </span>
                     <span className="message-content">{msg.message}</span>
                   </div>
@@ -222,8 +240,7 @@ export function GameChat({
         </>
       )}
     </div>
-  )
+  );
 }
 
-export default GameChat
-
+export default GameChat;
