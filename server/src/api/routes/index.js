@@ -1,11 +1,11 @@
-const { swaggerSpec, swaggerUi } = require('../../config/swagger/swagger');
-const userRoutes = require('./user.routes');
+const testRoutes = require('./test.routes');
 const authRoutes = require('./auth.routes');
+const userRoutes = require('./user.routes');
+const gameSessionRoutes = require('./game.routes');
 
 module.exports = (app) => {
-  if (process.env.NODE_ENV === 'development') {
-    app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  }
-  app.use('/api/users', userRoutes);
-  app.use('/api/auth', authRoutes);
-};
+    app.use('/api/tests', testRoutes);
+    app.use('/api/auth', authRoutes);
+    app.use('/api/users', userRoutes);
+    app.use('/api/games', gameSessionRoutes);
+}

@@ -1,16 +1,9 @@
 const errorHandler = require('./errorHandler');
-const verifyCaptcha = require('./verifyCaptcha');
 const rateLimiter = require('./rateLimiter');
+const verifyCaptcha = require('./verifyCaptcha');
 
 module.exports = {
-  errorHandler,
-  verifyCaptcha,
-  rateLimiter,
+    errorHandler,
+    rateLimiter,
+    verifyCaptcha,
 };
-
-/**
- * If this was Typescript it could be done like this:
- * export * from './errorHandler';
- * export * from './logger';
- * export * from './verofyJwt';
- */

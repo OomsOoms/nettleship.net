@@ -1,104 +1,73 @@
-const { userService } = require('../services');
-/**
- * Errors are caught in the error handler middleware so only the success response is sent
- */
+const userService = require('../services/user.service');
 
-/**
- * @desc Verify user
- * @method PATCH
- */
-async function verifyUser(req, res) {
-  await userService.verifyUser(req.user.id);
-  res.status(200).json({ message: 'Email verified' });
+async function createUser(req, res) {
+    // get the username, email, and password from the request body
+    const { username, email, password } = req.body;
+    // store the result of the registerUser function in the user variable for use later in authentication
+    const user = await userService.createUser(username, email, password);
+
+    // same code seen in the snippet from src/api/controllers/auth.controller.js
+    req.login(user, (err) => {
+        req.session.ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        req.session.userAgent = req.headers['user-agent'];
+        return res.status(201).json({ message: `User '${user.username}' created successfully` });
+    });
 }
 
-/**
- * @desc Request verification
- * @method POST
- */
-async function requestVerification(req, res) {
-  const { email } = req.body;
-  await userService.requestVerification(email);
-  res.status(200).json({ message: 'Verification email sent' });
-}
-
-/**
- * @desc Get all users
- * @method GET
- */
-async function getAllUsers(req, res) {
-  const users = await userService.getAllUsers();
-  res.status(200).json(users);
-}
-
-/**
- * @desc Get current user (From id in token)
- * @method GET
- */
 async function getUserByUsername(req, res) {
-  // Get the id from the verified token (full user object is only on routes that require authentication)
-  const id = req.user ? req.user.id : null;
-  const username = req.params.username;
-  const user = await userService.getUserByUsername(id, username);
-  res.status(200).json(user);
+    // get the requesting user verified from the session
+    const requestingUser = req.user;
+    // turn the fields query string into an array
+    const fields = req.query.fields ? req.query.fields.split(',') : [];
+    const username = req.params.username;
+    const user = await userService.getUserByUsername(requestingUser, username, fields);
+    res.status(200).json(user);
 }
 
-/**
- * @desc Register a new user
- * @method POST
- */
-async function registerUser(req, res) {
-  // get the username, email, and password from the request body
-  const { username, email, password } = req.body;
-  const user = await userService.registerUser(username, email, password);
-  // Same code is seen in login controller
-  req.login(user, (err) => {
-    req.session.ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    req.session.userAgent = req.headers['user-agent'];
-    res.status(201).json({ message: 'User registered and logged in successfully, check your email' });
-    // res.redirect('/dashboard');
-  });
-}
-
-/**
- * @desc Update user
- * @method PUT
- */
 async function updateUser(req, res) {
-  // get the reqyesting user verified from the session
-  const requestingUser = req.user;
-  // get the username of the user to update
-  const username = req.params.username;
-  const file = req.file;
-  const { currentPassword, ...updatedFields } = req.body;
-  const changes = await userService.updateUser(requestingUser, username, currentPassword, updatedFields, file);
-  if (changes.destroySessions) req.session.destroy();
-  res.status(200).json(changes);
+    // get the requesting user verified from the session
+    const requestingUser = req.user;
+    // get the username of the user to update
+    const username = req.params.username;
+    // multer middleware adds the file to the request object
+    const file = req.file;
+    // password is destructured from the body and the rest of the fields are stored in updatedFields
+    const { currentPassword, ...updatedFields } = req.body;
+    const changes = await userService.updateUser(requestingUser, username, currentPassword, updatedFields, file);
+    res.status(200).json(changes);
 }
 
-/**
- * @desc Delete user, if the user is an admin, they can delete any user unless it's themselves which then they need to provide their password
- * @method DELETE
- */
 async function deleteUser(req, res) {
-  // get the reqyesting user verified from the session
-  const requestingUser = req.user;
-  // get the username of the user to delete
-  const username = req.params.username;
-  // get the password from the request body
-  const { password } = req.body;
-  // delete the user
-  const result = await userService.deleteUser(requestingUser, username, password);
-  if (result.destroySessions) req.session.destroy();
-  res.status(204).end();
+    // get the requesting user verified from the session
+    const requestingUser = req.user;
+    // get the username of the user to delete
+    const username = req.params.username;
+    // get the password from the request body
+    const { password } = req.body;
+    // delete the user
+    await userService.deleteUser(requestingUser, username, password);
+    res.status(204).end();
+}
+
+async function requestVerification(req, res) {
+    const { email } = req.body;
+    await userService.requestVerification(email);
+    res.status(200).json({ message: 'Verification email sent' });
+}
+
+async function verifyEmail(req, res) {
+    // should be moved to validations
+    if (!req.headers.authorization) return res.status(400).json({ message: 'Token is required' });
+    const token = req.headers.authorization.split(' ')[1];
+    await userService.verifyEmail(token);
+    res.status(200).json({ message: 'Email verified' });
 }
 
 module.exports = {
-  verifyUser,
-  requestVerification,
-  getAllUsers,
-  getUserByUsername,
-  registerUser,
-  updateUser,
-  deleteUser,
+    createUser,
+    getUserByUsername,
+    updateUser,
+    deleteUser,
+    requestVerification,
+    verifyEmail,
 };

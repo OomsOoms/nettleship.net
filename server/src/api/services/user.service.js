@@ -1,193 +1,162 @@
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 
 const { User } = require('../models');
-const { generateJwt, sendEmail, uploadFile, deleteFile } = require('../helpers');
 const { Error } = require('../helpers');
+const { sendEmail, uploadAvatar, deleteFile } = require('../helpers');
 
-/**
- * Verifies a user's email
- * @param {string} id - The user id from the token
- * @throws {Error} - If the token is invalid or the user is not found
- */
-async function verifyUser(id) {
-  const user = await User.findById(id);
-  if (!user || !user.local.newEmail) throw Error.userNotFound('User not found or email already verified');
-  user.local.email = user.local.newEmail;
-  user.local.newEmail = null;
-  await user.save();
+async function createUser(username, email, password) {
+    // an error is thrown if the username or email is already in use
+    const user = new User({ username, 'local.pendingEmail': email, 'local.password': password });
+    return user.save();
 }
 
-/**
- * Lets the user request a new email if the newEmail field is not empty
- * @param {string} email - The new email to verify
- * @throws {Error} - If the user is not found or the email is already verified
- */
-async function requestVerification(email) {
-  const user = await User.findOne({ 'local.newEmail': email });
-  if (!user || !user.local.newEmail) throw Error.userNotFound('User not found or email already verified');
-  user.sendVerificationEmail();
-}
+// currently cant return embeded fields virtual fields?
+async function getUserByUsername(requestingUser, username, fields) {
+    // find the user with the username provided
+    const user = await User.findOne({ username });
+    if (!user) throw Error.userNotFound(`User with username '${username}' not found`);
+    // check if the requesting user is an admin or the same user
+    const isAdmin = requestingUser && requestingUser.profile.role === 'admin';
+    const isSameUser = requestingUser && requestingUser.username === username;
 
-/**
- * Gets all users if the requesting user is an admin, which is checked in the middleware
- * @returns {Promise<User[]>} - A list of all users
- */
-async function getAllUsers() {
-  const users = await User.find();
-  return users;
-}
-
-/**
- * Gets a user by their username and returns different fields based on the requesting user
- * @param {string} id - The requesting user id from the session
- * @param {string} username - The username of the user to get
- * @returns {Promise<User>} - The user with the given username
- * @throws {Error} - If the user is not found or the requesting user is not authorized
- */
-async function getUserByUsername(id, username) {
-  const user = await User.findOne({ username });
-  if (!user) throw Error.userNotFound(`User with username '${username}' not found`);
-  // Return the full user if the requesting user is the same user else return only the username and profile
-  return id === user.id ? user : { username: user.username, profile: user.profile };
-}
-
-/**
- * Registers a new user
- * @param {string} username - The username of the new user
- * @param {string} email - The email of the new user
- * @param {string} password - The password of the new user
- * @throws {Error} - If the email or username already exists or there is an error saving the user
- */
-async function registerUser(username, email, password) {
-  try {
-    const user = new User({ username, 'local.newEmail': email, 'local.password': password });
-    await user.save();
-    return user;
-  } catch (error) {
-    if (error.code === 11000) {
-      const conflicField = Object.keys(error.keyPattern).slice(-1)[0] === 'username' ? 'Username' : 'Email';
-      throw Error.mongoConflictError(`${conflicField} already exists`);
+    let filteredUser = {};
+    // if no fields are provided, include all fields
+    if (!fields || fields.length === 0) {
+        filteredUser = user;
+    } else {
+        // else only include the requested fields
+        fields.forEach(field => {
+            // should make it use user.get() if that exists, this would allow embeded fields to work
+            if (user[field]) filteredUser[field] = user[field];
+        });
     }
-    throw error;
-  }
+    // return the full user object if they are an admin or the same user
+    if (isSameUser || isAdmin) return filteredUser;
+    return {
+        username: filteredUser.username,
+        profile: filteredUser.profile,
+        stats: filteredUser.stats,
+    }
 }
 
-/**
- * Updates a user's information based on the fields provided, admins can update any user without a password
- * @param {string} id - The requesting user id from the session
- * @param {string} username - The username of the user to get
- * @param {string} currentPassword - The current password of the user
- * @param {Object} updatedFields - The fields to update
- * @param {Object} file - The file to upload
- * @returns {Promise<Object>} - The changes made to the user
- */
 async function updateUser(requestingUser, username, currentPassword, updatedFields, file) {
-  // Find the user to update
-  const user = await User.findOne({ username });
-  if (!user) throw Error.userNotFound(`User with username '${username}' not found`);
+    // find the user with the username provided
+    const user = await User.findOne({ username });
+    if (!user) throw Error.userNotFound(`User with username '${username}' not found`);
+    // check if the requesting user is an admin or the same user
+    const isAdmin = requestingUser && requestingUser.profile.role === 'admin';
+    const isSameUser = requestingUser && requestingUser.username === username;
 
-  // Check if the requesting user is an admin or the same user
-  const isAdmin = requestingUser.profile.roles.includes('admin');
-  const isSameUser = requestingUser.id === user.id;
-
-  // Check if the user is authorized to delete the user
-  if (!isSameUser && !isAdmin) throw Error.invalidCredentials('Not authorized to delete this user');
-
-  // Admins can update any user with the admin password, but not themselves with the admin password
-  if (isAdmin && !isSameUser && currentPassword !== process.env.ADMIN_PASSWORD)
-    throw Error.invalidCredentials('Invalid admin password');
-
-  const changes = { user: user.username };
-
-  if (file) {
-    const oldFile = user.profile.avatarUrl;
-    if (oldFile !== 'default-avatar.jpg') await deleteFile(oldFile);
-    const filename = `${Date.now()}-${user.id}.jpg`;
-    const result = await uploadFile(file, `/uploads/avatars/${filename}`);
-    user.set('profile.avatarUrl', result.key);
-    changes.avatarUrl = { message: 'Profile picture updated' };
-  }
-
-  for (const [path, value] of Object.entries(updatedFields)) {
-    // Skip if the value is the same as the current value or if the value is empty
-    if (user.get(path) === value || !value) continue;
-
-    switch (path) {
-      case 'password':
-        // Users can update themselves with their password
-        if (isSameUser && !(await user.verifyPassword(currentPassword)))
-          throw Error.invalidCredentials('Invalid password');
-        user.set(path, value);
-        changes.password = { message: 'Password changed, signed out of all sessions' };
-        await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': user.id });
-        break;
-      case 'email':
-        // newEmail instead of email, this is the request is email instead of newEmail
-        user.set('newEmail', value);
-        changes.email = { message: 'Email change requested, verify email', value };
-        break;
-      default:
-        user.set(path, value);
-        changes[path] = { message: 'Field updated', value };
+    // check if the user is authorised to delete the user
+    if (!isSameUser && !isAdmin) {
+        throw Error.invalidCredentials('Not authorized to delete this user');
     }
-  }
-  try {
+    // admin can delete any user that isnt themselves with the admin password
+    if (isAdmin && !isSameUser && password !== process.env.ADMIN_PASSWORD) {
+        throw Error.invalidCredentials('Invalid admin password');
+    }
+
+    // store the changes to the user
+    let changes = {};
+
+    // if a file is provided upload it and delete the old file
+    if (file) {
+        const oldFile = user.profile.avatarUrl;
+        // if the file is not the default avatar delete the old file
+        // this should totally be defined in the env file but im lazy and i dont have time to write about it in the docs so ill just leave it for now
+        if (oldFile !== '/images/default-avatars/default-avatar.jpg') await deleteFile(oldFile);
+        // create a unique filename for the new file and upload it
+        const filename = `${Date.now()}-${user.id}.jpg`;
+        // set the avatarUrl to the new file
+        user.profile.avatarUrl = await uploadAvatar(file, filename);
+        changes.avatarUrl = { message: 'Profile picture updated' };
+    }
+    // update the user with the provided fields
+    for (const field in updatedFields) {
+        // check if any changes were made
+        if (user[field] === updatedFields[field]) continue;
+        // check the rest of the fields
+        switch (field) {
+            case 'password':
+                // verify the password
+                user.verifyPassword(currentPassword);
+                // update the password and sign out all sessions
+                user.local.password = updatedFields[field];
+                await mongoose.connection.db.collection('sessions').deleteMany({ 'session.passport.user.id': user.id });
+                changes.password = { message: 'Password changed, signed out of all sessions' };
+                break;
+            case 'email':
+                user.local.newEmail = updatedFields[field];
+                changes.email = { message: 'Email updated, verification email sent' };
+                break;
+            default:
+                user.set(field, updatedFields[field]);
+                changes[field] = { message: `${field} updated` };
+        }
+    }
     await user.save();
-    if (changes.email) {
-      const token = generateJwt({ id: user.id }, { expiresIn: '24h' });
-      sendEmail(changes.email.value, 'Verify your email', 'verifyEmail', { username: user.username, token });
-    }
-  } catch (error) {
-    if (error.code === 11000) {
-      const conflicField = error.keyPattern.email || error.keyPattern.newEmail ? 'Email' : 'Username';
-      throw Error.mongoConflictError(`${conflicField} already exists`);
-    }
-    throw error;
-  }
-
-  return { changes, destroySessions: isSameUser && changes.password !== undefined };
+    return changes;
 }
 
-/**
- * Deletes a user and all their sessions, admins can delete any user without a password or themselves with a password
- * @param {string} requestingUser - The requesting user from the session
- * @param {string} username - The username of the user to delete
- * @param {string} password - The password of the user to delete
- * @throws {Error} - If the user is not found or the password is invalid
- */
 async function deleteUser(requestingUser, username, password) {
-  // Find the user to delete
-  const user = await User.findOne({ username });
-  if (!user) throw Error.userNotFound(`User with username '${username}' not found`);
+    // find the user with the username provided
+    const user = await User.findOne({ username });
+    if (!user) throw Error.userNotFound(`User with username '${username}' not found`);
+    // check if the requesting user is an admin or the same user
+    const isAdmin = requestingUser && requestingUser.profile.role === 'admin';
+    const isSameUser = requestingUser && requestingUser.username === username;
 
-  // Check if the requesting user is an admin or the same user
-  const isAdmin = requestingUser.profile.roles.includes('admin');
-  const isSameUser = requestingUser.id === user.id;
+    // check if the user is authorised to delete the user
+    if (!isSameUser && !isAdmin) {
+        throw Error.invalidCredentials('Not authorized to delete this user');
+    }
+    // admin can delete any user that isnt themselves with the admin password
+    if (isAdmin && !isSameUser && password !== process.env.ADMIN_PASSWORD) {
+        throw Error.invalidCredentials('Invalid admin password');
+    }
+    // user can delete themselves with the correct password
+    if (isSameUser && !(await user.verifyPassword(password))) {
+        throw Error.invalidCredentials('Invalid password');
+    }
 
-  // Check if the user is authorized to delete the user
-  if (!isSameUser && !isAdmin) throw Error.invalidCredentials('Not authorized to delete this user');
+    await mongoose.connection.db.collection('sessions').deleteMany({ 'session.passport.user.id': user._id });
+    const oldFile = user.profile.avatarUrl;
+    if (oldFile !== '/images/default-avatars/default-avatar.jpg') await deleteFile(oldFile);
+    await User.deleteOne({ _id: user.id });
 
-  // Admins can delete any user with the admin password, but not themselves with the admin password
-  if (isAdmin && !isSameUser && password !== process.env.ADMIN_PASSWORD)
-    throw Error.invalidCredentials('Invalid admin password');
+    return { message: `User ${user.username} deleted` };
+}
 
-  // Users can delete themselves with their password
-  if (isSameUser && !(await user.verifyPassword(password))) throw Error.invalidCredentials('Invalid password');
+async function requestVerification(email) {
+    const user = await User.findOne({ 'local.pendingEmail': email });
+    if (!user) return; // no error is thrown to avoid email enumeration
+    user.sendVerificationEmail();
+}
 
-  await mongoose.connection.db.collection('sessions').deleteMany({ 'session.userId': user.id });
-  const oldFile = user.profile.avatarUrl;
-  if (oldFile !== '/uploads/avatars/default-avatar.jpg') await deleteFile(oldFile);
-  await User.deleteOne({ id: user.id });
-
-  return { message: `User ${user.username} deleted`, destroySessions: isSameUser };
+async function verifyEmail(token) {
+    // find the user with the id provided in the token
+    let decoded;
+    try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    } catch (error) {
+        throw Error.BadRequest('Invalid token');
+    }
+    const userId = decoded.userId;
+    const user = await User.findById(userId);
+    if (!user) throw Error.userNotFound('User not found');
+    // replace the email with the new email and remove the new email
+    if (!user.local.pendingEmail) throw Error.BadRequest('Email already verified');
+    user.local.email = user.local.pendingEmail;
+    user.local.pendingEmail = undefined
+    await user.save();
 }
 
 module.exports = {
-  verifyUser,
-  requestVerification,
-  getAllUsers,
-  getUserByUsername,
-  registerUser,
-  updateUser,
-  deleteUser,
+    createUser,
+    getUserByUsername,
+    updateUser,
+    deleteUser,
+    requestVerification,
+    verifyEmail
 };
