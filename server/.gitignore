@@ -1,5 +1,5 @@
-# Ignore all files in the uploads/avatars directory
-public
+# Ignore all files in the uploads/uploads directory
+public/uploads/*
 
 # Ignore all logs folders
 **/logs/
