@@ -32,7 +32,7 @@ const ProfilePage = () => {
   // Now we're guaranteed to have user data
   const avatarUrl = user.profile?.avatarUrl.startsWith("https")
     ? user.profile.avatarUrl
-    : `${import.meta.env.VITE_IMAGE_URL}${user.profile.avatarUrl}`;
+    : `${import.meta.env.VITE_BACKEND_DOMAIN}${user.profile.avatarUrl}`;
 
   return (
     <MainLayout>

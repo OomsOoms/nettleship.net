@@ -97,7 +97,7 @@ export default function EditProfilePage() {
   // Now we're guaranteed to have user data
   const avatarUrl = user.profile?.avatarUrl.startsWith("http")
     ? user.profile.avatarUrl
-    : `${import.meta.env.VITE_IMAGE_URL}${user.profile.avatarUrl}`;
+    : `${import.meta.env.VITE_BACKEND_DOMAIN}${user.profile.avatarUrl}`;
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,

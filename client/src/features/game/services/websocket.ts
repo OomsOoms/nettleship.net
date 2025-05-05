@@ -1,6 +1,6 @@
 const websocketService = {
   config: {
-    url: import.meta.env.VITE_API_URL,
+    url: import.meta.env.VITE_BACKEND_DOMAIN,
     reconnectInterval: 50000,
     maxRetries: 10,
   },

@@ -17,7 +17,7 @@ const Navbar = () => {
     user && user.avatarUrl.startsWith("http")
       ? user.avatarUrl
       : user
-        ? import.meta.env.VITE_IMAGE_URL + user.avatarUrl
+        ? import.meta.env.VITE_BACKEND_DOMAIN + user.avatarUrl
         : "";
 
   const username = user && user.username;

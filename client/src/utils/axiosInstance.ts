@@ -2,7 +2,7 @@ import axios from "axios";
 
 const createAxiosInstance = () => {
   // Use different base URLs based on environment
-  const baseURL = import.meta.env.VITE_API_URL;
+  const baseURL = import.meta.env.VITE_BACKEND_DOMAIN;
 
   const axiosInstance = axios.create({
     baseURL,

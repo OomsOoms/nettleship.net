@@ -59,7 +59,7 @@ const useRegister = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+    window.location.href = `${import.meta.env.VITE_BACKEND_DOMAIN}/auth/google`;
   };
 
   return {
